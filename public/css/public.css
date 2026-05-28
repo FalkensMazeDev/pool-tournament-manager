@@ -1,0 +1,403 @@
+/* ================================================================
+   GDC Tournaments — Public Styles
+   Theme-independent. All selectors scoped to .ptm- prefix.
+   ================================================================ */
+
+/* ----------------------------------------------------------------
+   Tournament list card
+   ---------------------------------------------------------------- */
+.ptm-tournament-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-family: inherit;
+}
+
+.ptm-tournament-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #fff;
+    overflow: hidden;
+    transition: box-shadow 0.15s;
+}
+.ptm-tournament-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+.ptm-tournament-card--active { border-left: 4px solid #e53e3e; }
+.ptm-tournament-card--complete { border-left: 4px solid #48bb78; }
+.ptm-tournament-card--draft { border-left: 4px solid #a0aec0; }
+
+.ptm-tournament-card-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    gap: 16px;
+}
+@media (max-width: 600px) {
+    .ptm-tournament-card-inner { flex-direction: column; align-items: flex-start; }
+}
+
+.ptm-tournament-card-name {
+    margin: 0 0 6px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a202c;
+}
+
+.ptm-tournament-card-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.ptm-detail-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #edf2f7;
+    color: #4a5568;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.ptm-detail-date {
+    font-size: 13px;
+    color: #718096;
+}
+
+.ptm-tournament-card-status {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.ptm-pub-live-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: #fed7d7;
+    color: #c53030;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    animation: ptm-pulse 2s infinite;
+}
+
+.ptm-pub-upcoming-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: #e2e8f0;
+    color: #4a5568;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.ptm-pub-complete-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: #c6f6d5;
+    color: #276749;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.ptm-view-bracket-btn {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 6px;
+    background: #2b6cb0;
+    color: #fff !important;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none !important;
+    transition: background 0.15s;
+}
+.ptm-view-bracket-btn:hover { background: #2c5282; }
+
+.ptm-no-tournaments { color: #718096; font-style: italic; }
+
+/* ----------------------------------------------------------------
+   Public bracket wrapper
+   ---------------------------------------------------------------- */
+.ptm-bracket-public {
+    font-family: inherit;
+    color: #1a202c;
+}
+
+.ptm-bracket-public-header {
+    margin-bottom: 20px;
+}
+
+.ptm-bracket-public-title {
+    margin: 0 0 6px;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.ptm-bracket-public-meta {
+    color: #718096;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.ptm-live-badge {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 20px;
+    background: #fed7d7;
+    color: #c53030;
+    font-size: 13px;
+    font-weight: 700;
+    animation: ptm-pulse 2s infinite;
+}
+
+.ptm-complete-badge {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 20px;
+    background: #c6f6d5;
+    color: #276749;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+@keyframes ptm-pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.6; }
+}
+
+/* ----------------------------------------------------------------
+   Public bracket tabs
+   ---------------------------------------------------------------- */
+.ptm-bracket-public-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.ptm-pub-tab {
+    padding: 8px 18px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: #718096;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: color 0.15s, border-color 0.15s;
+}
+.ptm-pub-tab:hover { color: #2b6cb0; }
+.ptm-pub-tab.active {
+    color: #2b6cb0;
+    border-bottom-color: #2b6cb0;
+}
+
+/* ----------------------------------------------------------------
+   Public bracket rounds
+   ---------------------------------------------------------------- */
+.ptm-bracket-pub-rounds {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding-bottom: 16px;
+}
+
+.ptm-pub-round {
+    min-width: 200px;
+    flex-shrink: 0;
+}
+
+.ptm-pub-round-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #a0aec0;
+    margin-bottom: 10px;
+}
+
+.ptm-pub-round-matches {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* ----------------------------------------------------------------
+   Public match card
+   ---------------------------------------------------------------- */
+.ptm-pub-match {
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: #fff;
+    overflow: hidden;
+    font-size: 13px;
+}
+.ptm-pub-match--in_progress { border-color: #e53e3e; }
+.ptm-pub-match--complete    { border-color: #48bb78; }
+
+.ptm-pub-player {
+    display: flex;
+    align-items: center;
+    padding: 8px 10px;
+    gap: 8px;
+    border-bottom: 1px solid #f7fafc;
+    min-height: 36px;
+}
+.ptm-pub-player:last-child { border-bottom: none; }
+
+.ptm-pub-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+}
+.ptm-pub-name em { color: #a0aec0; font-style: normal; }
+
+.ptm-pub-score {
+    font-size: 16px;
+    font-weight: 700;
+    min-width: 24px;
+    text-align: center;
+    color: #2d3748;
+}
+
+.ptm-pub-player.ptm-pub-winner {
+    background: #f0fff4;
+}
+.ptm-pub-player.ptm-pub-winner .ptm-pub-name  { color: #276749; }
+.ptm-pub-player.ptm-pub-winner .ptm-pub-score { color: #276749; }
+
+.ptm-pub-player.ptm-pub-loser {
+    opacity: 0.55;
+}
+
+.ptm-pub-live-dot {
+    text-align: center;
+    padding: 3px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #e53e3e;
+    background: #fff5f5;
+    border-top: 1px solid #fed7d7;
+    letter-spacing: 0.5px;
+    animation: ptm-pulse 1.5s infinite;
+}
+
+/* ----------------------------------------------------------------
+   Footer / last-updated
+   ---------------------------------------------------------------- */
+.ptm-bracket-public-footer {
+    margin-top: 12px;
+    text-align: right;
+}
+.ptm-pub-updated {
+    font-size: 11px;
+    color: #a0aec0;
+}
+
+/* ================================================================
+   Results page
+   ================================================================ */
+.ptm-results { font-family: inherit; max-width: 720px; margin: 0 auto; }
+
+.ptm-results-header { margin-bottom: 28px; }
+.ptm-results-title  { font-size: 26px; font-weight: 800; margin: 0 0 6px; color: #1a202c; }
+.ptm-results-meta   { color: #718096; font-size: 14px; margin-bottom: 12px; }
+.ptm-results-nav    { margin-bottom: 16px; }
+.ptm-results-bracket-link { color: #2b6cb0; font-size: 14px; text-decoration: none; }
+.ptm-results-bracket-link:hover { text-decoration: underline; }
+
+.ptm-results-pot {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #f0fff4;
+    border: 1px solid #9ae6b4;
+    border-radius: 8px;
+    padding: 10px 16px;
+    margin-bottom: 16px;
+}
+.ptm-pot-label  { font-size: 13px; color: #276749; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+.ptm-pot-amount { font-size: 24px; font-weight: 800; color: #276749; }
+.ptm-pot-breakdown { font-size: 12px; color: #48bb78; }
+
+.ptm-results-empty { color: #718096; font-style: italic; }
+
+.ptm-results-table-wrap { overflow-x: auto; margin-bottom: 32px; }
+.ptm-results-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+}
+.ptm-results-table th {
+    background: #f7fafc;
+    border-bottom: 2px solid #e2e8f0;
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #718096;
+}
+.ptm-results-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #f0f4f8;
+    vertical-align: middle;
+}
+.ptm-results-table tr:last-child td { border-bottom: none; }
+
+.ptm-row-first  { background: #fffff0; }
+.ptm-row-second { background: #f7faff; }
+.ptm-row-third  { background: #fffaf0; }
+
+.ptm-col-place { width: 90px; text-align: center; }
+.ptm-medal     { font-size: 24px; display: block; }
+.ptm-place-num { font-weight: 700; font-size: 14px; color: #4a5568; display: block; }
+.ptm-col-player { font-weight: 600; font-size: 16px; }
+.ptm-col-record { color: #718096; font-size: 13px; }
+.ptm-col-payout { text-align: right; font-size: 15px; }
+.ptm-col-payout strong { color: #276749; }
+
+/* Payout breakdown bars */
+.ptm-payout-summary { margin-top: 24px; }
+.ptm-payout-summary h3 { font-size: 15px; font-weight: 700; margin-bottom: 12px; color: #2d3748; }
+.ptm-payout-bars { display: flex; flex-direction: column; gap: 10px; }
+.ptm-payout-bar-row {
+    display: grid;
+    grid-template-columns: 130px 1fr 50px 80px;
+    align-items: center;
+    gap: 10px;
+}
+.ptm-payout-bar-label { font-size: 13px; font-weight: 600; color: #4a5568; }
+.ptm-payout-bar-track { background: #edf2f7; border-radius: 4px; height: 10px; overflow: hidden; }
+.ptm-payout-bar-fill  { background: linear-gradient(90deg, #48bb78, #38a169); height: 100%; border-radius: 4px; transition: width 0.4s; }
+.ptm-payout-bar-pct   { font-size: 12px; color: #718096; text-align: right; }
+.ptm-payout-bar-amt   { font-size: 13px; font-weight: 700; color: #276749; text-align: right; }
+@media (max-width: 500px) {
+    .ptm-payout-bar-row { grid-template-columns: 110px 1fr 40px 70px; }
+}
+
+.ptm-results-link {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 8px 18px;
+    background: #2b6cb0;
+    color: #fff !important;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none !important;
+}
+.ptm-results-link:hover { background: #2c5282; }
+
+.ptm-payout-note { font-size: 12px; color: #718096; margin-bottom: 12px; font-style: italic; }
+.ptm-payout-remainder { font-size: 13px; color: #718096; margin-top: 10px; }

@@ -1,0 +1,459 @@
+/* ================================================================
+   GDC Tournaments — Scorer Page Styles
+   Standalone page, no theme dependency. Mobile-first.
+   ================================================================ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+    height: 100%;
+    background: #0f172a;
+    color: #f1f5f9;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-text-size-adjust: 100%;
+    overscroll-behavior: none;
+}
+
+/* ----------------------------------------------------------------
+   Outer wrapper
+   ---------------------------------------------------------------- */
+.ptm-scorer-body {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+}
+
+.ptm-scorer {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+    max-width: 480px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* ----------------------------------------------------------------
+   Header
+   ---------------------------------------------------------------- */
+.ptm-scorer-header {
+    padding: 16px 20px 12px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.ptm-scorer-tournament {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: #f8fafc;
+}
+
+.ptm-scorer-meta {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ----------------------------------------------------------------
+   Race-to indicator
+   ---------------------------------------------------------------- */
+.ptm-scorer-race {
+    text-align: center;
+    padding: 10px 20px;
+    font-size: 13px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ----------------------------------------------------------------
+   Players grid
+   ---------------------------------------------------------------- */
+.ptm-scorer-players {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: stretch;
+    gap: 0;
+    flex: 1;
+    padding: 12px 16px;
+}
+
+.ptm-scorer-player {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 8px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 12px;
+}
+
+.ptm-scorer-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #475569;
+    padding: 0 8px;
+    letter-spacing: 1px;
+}
+
+/* ----------------------------------------------------------------
+   Player name
+   ---------------------------------------------------------------- */
+.ptm-scorer-name {
+    font-size: 15px;
+    font-weight: 700;
+    text-align: center;
+    color: #e2e8f0;
+    line-height: 1.2;
+    word-break: break-word;
+    max-width: 140px;
+}
+
+/* ----------------------------------------------------------------
+   Score display
+   ---------------------------------------------------------------- */
+.ptm-scorer-score {
+    font-size: 72px;
+    font-weight: 800;
+    line-height: 1;
+    color: #f8fafc;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -2px;
+}
+
+/* ----------------------------------------------------------------
+   Progress bar
+   ---------------------------------------------------------------- */
+.ptm-scorer-progress {
+    width: 100%;
+    max-width: 130px;
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.ptm-scorer-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+/* ----------------------------------------------------------------
+   Score buttons
+   ---------------------------------------------------------------- */
+.ptm-scorer-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.ptm-scorer-plus,
+.ptm-scorer-minus {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    font-size: 28px;
+    font-weight: 300;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.1s, opacity 0.1s;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+}
+
+.ptm-scorer-plus {
+    background: #22c55e;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.35);
+}
+.ptm-scorer-plus:active {
+    transform: scale(0.93);
+    box-shadow: 0 2px 6px rgba(34, 197, 94, 0.35);
+}
+
+.ptm-scorer-minus {
+    background: rgba(255,255,255,0.08);
+    color: #94a3b8;
+}
+.ptm-scorer-minus:active { transform: scale(0.93); }
+
+.ptm-scorer-plus:disabled,
+.ptm-scorer-minus:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ----------------------------------------------------------------
+   Footer hint
+   ---------------------------------------------------------------- */
+.ptm-scorer-footer {
+    padding: 12px 24px 20px;
+    text-align: center;
+}
+
+.ptm-scorer-hint {
+    font-size: 12px;
+    color: #475569;
+    line-height: 1.5;
+}
+
+/* ----------------------------------------------------------------
+   Match complete screen
+   ---------------------------------------------------------------- */
+.ptm-scorer-complete {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+    text-align: center;
+    gap: 12px;
+}
+
+.ptm-scorer-complete-icon { font-size: 64px; }
+
+.ptm-scorer-complete h2 {
+    font-size: 28px;
+    font-weight: 800;
+    color: #f8fafc;
+}
+
+.ptm-scorer-winner-label {
+    font-size: 18px;
+    color: #94a3b8;
+}
+.ptm-scorer-winner-label strong { color: #22c55e; }
+
+.ptm-scorer-final-score {
+    margin-top: 12px;
+    font-size: 20px;
+    font-weight: 700;
+    color: #64748b;
+}
+
+/* ----------------------------------------------------------------
+   Winner overlay
+   ---------------------------------------------------------------- */
+.ptm-scorer-winner-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.88);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    animation: ptm-fade-in 0.3s ease;
+}
+
+.ptm-scorer-winner-content {
+    text-align: center;
+    padding: 40px 32px;
+}
+
+.ptm-winner-icon {
+    font-size: 80px;
+    display: block;
+    margin-bottom: 20px;
+    animation: ptm-bounce 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+.ptm-scorer-winner-content h2 {
+    font-size: 36px;
+    font-weight: 800;
+    color: #fbbf24;
+    margin-bottom: 8px;
+}
+
+.ptm-scorer-winner-content p {
+    font-size: 18px;
+    color: #94a3b8;
+}
+
+@keyframes ptm-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes ptm-bounce {
+    0%, 100% { transform: translateY(0); }
+    40%       { transform: translateY(-20px); }
+    60%       { transform: translateY(-10px); }
+}
+
+/* ----------------------------------------------------------------
+   Responsive tweaks for small screens
+   ---------------------------------------------------------------- */
+@media (max-width: 380px) {
+    .ptm-scorer-score { font-size: 56px; }
+    .ptm-scorer-plus,
+    .ptm-scorer-minus { width: 52px; height: 52px; font-size: 24px; }
+    .ptm-scorer-name { font-size: 13px; }
+}
+
+@media (min-height: 800px) {
+    .ptm-scorer-score { font-size: 88px; }
+    .ptm-scorer-plus,
+    .ptm-scorer-minus { width: 72px; height: 72px; font-size: 32px; }
+}
+
+/* ----------------------------------------------------------------
+   Table number badge (scorer header)
+   ---------------------------------------------------------------- */
+.ptm-scorer-table-num {
+    font-size: 22px;
+    font-weight: 800;
+    color: #3b82f6;
+    letter-spacing: -0.5px;
+    margin-bottom: 2px;
+}
+
+/* ----------------------------------------------------------------
+   QR share button in header
+   ---------------------------------------------------------------- */
+.ptm-scorer-header { position: relative; }
+.ptm-scorer-qr-btn {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 6px;
+    color: #94a3b8;
+    font-size: 20px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+.ptm-scorer-qr-btn:active { background: rgba(255,255,255,0.2); }
+
+/* ----------------------------------------------------------------
+   QR share sheet overlay
+   ---------------------------------------------------------------- */
+.ptm-scorer-qr-sheet {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: ptm-fade-in 0.2s ease;
+}
+.ptm-scorer-qr-inner {
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px 24px;
+    text-align: center;
+    max-width: 300px;
+    width: 90%;
+}
+.ptm-scorer-qr-inner svg { display: block; margin: 0 auto; }
+.ptm-scorer-qr-url {
+    font-size: 10px;
+    color: #94a3b8;
+    word-break: break-all;
+    margin: 10px 0 4px;
+    font-family: monospace;
+}
+.ptm-scorer-qr-hint {
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 16px;
+}
+.ptm-scorer-qr-close {
+    background: #1e293b;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 28px;
+    font-size: 15px;
+    cursor: pointer;
+    width: 100%;
+}
+
+/* ----------------------------------------------------------------
+   Win confirmation dialog
+   ---------------------------------------------------------------- */
+.ptm-scorer-confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 150;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: ptm-fade-in 0.15s ease;
+}
+
+.ptm-scorer-confirm-box {
+    background: #1e293b;
+    border: 2px solid #3b82f6;
+    border-radius: 16px;
+    padding: 32px 28px;
+    text-align: center;
+    max-width: 320px;
+    width: 90%;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+
+.ptm-confirm-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+}
+
+#ptm-confirm-msg {
+    font-size: 18px;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin: 0 0 24px;
+    line-height: 1.4;
+}
+
+.ptm-confirm-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.ptm-confirm-yes,
+.ptm-confirm-no {
+    flex: 1;
+    padding: 14px 0;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.ptm-confirm-yes {
+    background: #22c55e;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(34,197,94,0.35);
+}
+.ptm-confirm-yes:active { transform: scale(0.97); }
+
+.ptm-confirm-no {
+    background: rgba(255,255,255,0.08);
+    color: #94a3b8;
+}
+.ptm-confirm-no:active { transform: scale(0.97); }
