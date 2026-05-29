@@ -40,16 +40,16 @@ $table_status = $tournament->status === 'active' ? PTM_Tables::get_table_status(
                 <div class="ptm-table-num">Table <?php echo $t; ?></div>
                 <?php if ( $tm ) : ?>
                     <div class="ptm-table-players">
-                        <span><?php echo esc_html( $tm->player1_name ?? 'TBD' ); ?></span>
+                        <span><?php echo esc_html( $tm['player1_name'] ?? 'TBD' ); ?></span>
                         <em>vs</em>
-                        <span><?php echo esc_html( $tm->player2_name ?? 'TBD' ); ?></span>
+                        <span><?php echo esc_html( $tm['player2_name'] ?? 'TBD' ); ?></span>
                     </div>
-                    <div class="ptm-table-score"><?php echo (int)$tm->player1_score; ?> – <?php echo (int)$tm->player2_score; ?></div>
+                    <div class="ptm-table-score"><?php echo (int)$tm['player1_score']; ?> – <?php echo (int)$tm['player2_score']; ?></div>
                     <div class="ptm-table-side">
-                        <?php echo ucfirst( $tm->bracket_side ); ?> · R<?php echo $tm->round; ?>
+                        <?php echo ucfirst( $tm['bracket_side'] ); ?> · R<?php echo $tm['round']; ?>
                     </div>
-                    <?php if ( $tm->score_token ) :
-                        $scorer_url = home_url( '/' . PTM_Settings::get( 'scorer_base_slug' ) . '/' . $tm->score_token );
+                    <?php if ( $tm['score_token'] ) :
+                        $scorer_url = home_url( '/' . PTM_Settings::get( 'scorer_base_slug' ) . '/' . $tm['score_token'] );
                     ?>
                     <div class="ptm-table-qr-wrap">
                         <button type="button" class="ptm-qr-toggle ptm-table-qr-btn" data-url="<?php echo esc_attr( $scorer_url ); ?>" title="Show QR code">⊞ QR</button>

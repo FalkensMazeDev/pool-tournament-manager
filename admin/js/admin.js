@@ -309,64 +309,159 @@
         setInterval(function() { checkAdminUpdates(tid); }, 10000);
     }
 
-    // ── QR modal overlay
+    // ── QR toggle popup (bracket/table QR buttons) — uses its own unique ID
     $('body').append(
-        '<div id="ptm-qr-modal" style="display:none" role="dialog" aria-modal="true">' +
-        '<div id="ptm-qr-modal-backdrop"></div>' +
-        '<div id="ptm-qr-modal-box">' +
-        '<button id="ptm-qr-modal-close" aria-label="Close">&times;<\/button>' +
-        '<div id="ptm-qr-modal-svg"><\/div>' +
-        '<p id="ptm-qr-modal-url"><\/p>' +
+        '<div id="ptm-qr-popup" style="display:none" role="dialog" aria-modal="true">' +
+        '<div id="ptm-qr-popup-backdrop"></div>' +
+        '<div id="ptm-qr-popup-box">' +
+        '<button id="ptm-qr-popup-close" aria-label="Close">&times;<\/button>' +
+        '<div id="ptm-qr-popup-canvas"><\/div>' +
+        '<p id="ptm-qr-popup-url"><\/p>' +
         '<\/div><\/div>'
     );
 
     $(document).on('click', '.ptm-qr-toggle', function() {
         var url = $(this).data('url');
         if (!url) return;
-        $('#ptm-qr-modal-url').text(url);
-        $('#ptm-qr-modal-svg').empty();
-        new QRCode(document.getElementById('ptm-qr-modal-svg'), {
-            text: url,
-            width: 220,
-            height: 220,
-            colorDark: '#000000',
-            colorLight: '#ffffff',
-            correctLevel: QRCode.CorrectLevel.M
-        });
-        $('#ptm-qr-modal').css('display', 'flex');
+        $('#ptm-qr-popup-url').text(url);
+        $('#ptm-qr-popup-canvas').empty();
+        try {
+            new QRCode(document.getElementById('ptm-qr-popup-canvas'), {
+                text: url,
+                width: 220,
+                height: 220,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.M
+            });
+        } catch(e) { /* library unavailable */ }
+        $('#ptm-qr-popup').css('display', 'flex');
     });
 
-    $(document).on('click', '#ptm-qr-modal-close, #ptm-qr-modal-backdrop', function() {
-        $('#ptm-qr-modal').hide();
+    $(document).on('click', '#ptm-qr-popup-close, #ptm-qr-popup-backdrop', function() {
+        $('#ptm-qr-popup').hide();
     });
 
     $(document).on('keydown', function(e) {
-        if (e.key === 'Escape') $('#ptm-qr-modal').hide();
+        if (e.key === 'Escape') {
+            $('#ptm-qr-popup').hide();
+            $('#ptm-qr-modal').fadeOut(150);
+        }
+    });
+
+    // ── Player form toggle
+    function openPlayerForm() {
+        $('#ptm-player-form-wrap').addClass('is-open');
+        $('html, body').animate({ scrollTop: $('#ptm-player-form-wrap').offset().top - 50 }, 200);
+    }
+    function closePlayerForm() {
+        $('#ptm-player-form-wrap').removeClass('is-open');
+        $('#edit-player-id').val('');
+        $('#player-name, #player-email, #player-phone').val('');
+        $('#player-apa-number, #player-apa-sl, #player-fargo-id, #player-fargo-rating').val('');
+        $('#player-do-not-notify').prop('checked', false);
+        $('#ptm-meta-fields').empty();
+        $('#ptm-player-form-title').text('Add Player');
+        $('#ptm-player-submit').text('Add Player');
+    }
+
+    $('#ptm-toggle-player-form').on('click', function() {
+        if ($('#ptm-player-form-wrap').hasClass('is-open')) {
+            closePlayerForm();
+        } else {
+            openPlayerForm();
+        }
     });
 
     // ── Player registry edit
     $(document).on('click', '.ptm-edit-player', function() {
         const btn = $(this);
-        $('#edit-player-id').val(btn.data('id')); $('#player-name').val(btn.data('name'));
-        $('#player-email').val(btn.data('email')); $('#player-phone').val(btn.data('phone'));
+        $('#edit-player-id').val(btn.data('id'));
+        $('#player-name').val(btn.data('name'));
+        $('#player-email').val(btn.data('email'));
+        $('#player-phone').val(btn.data('phone'));
         $('#player-apa-number').val(btn.data('apa-number') || '');
         $('#player-apa-sl').val(btn.data('apa-sl') || '');
         $('#player-fargo-id').val(btn.data('fargo-id') || '');
         $('#player-fargo-rating').val(btn.data('fargo-rating') || '');
-        // Load custom meta
+        $('#player-do-not-notify').prop('checked', btn.data('do-not-notify') == '1');
         $('#ptm-meta-fields').empty();
         const meta = btn.data('meta') || {};
         Object.entries(meta).forEach(([k, v]) => addMetaRow(k, v));
-        $('#ptm-player-form-title').text('Edit Player'); $('#ptm-player-submit').text('Update Player');
-        $('#ptm-player-cancel').show();
-        $('html, body').animate({ scrollTop: $('#ptm-player-form').offset().top - 50 }, 300);
+        $('#ptm-player-form-title').text('Edit Player');
+        $('#ptm-player-submit').text('Update Player');
+        openPlayerForm();
     });
+
     $('#ptm-player-cancel').on('click', function() {
-        $('#edit-player-id').val(''); $('#player-name, #player-email, #player-phone').val('');
-        $('#player-apa-number, #player-apa-sl, #player-fargo-id, #player-fargo-rating').val('');
-        $('#ptm-meta-fields').empty();
-        $('#ptm-player-form-title').text('Add Player'); $('#ptm-player-submit').text('Add Player'); $(this).hide();
+        closePlayerForm();
     });
+
+    // ── Player registry search + pagination
+    (function() {
+        var $table = $('#ptm-players-table');
+        if (!$table.length) return;
+
+        var PAGE_SIZE = 20;
+        var currentPage = 1;
+        var filterText = '';
+
+        function getVisibleRows() {
+            return $table.find('tbody tr').filter(function() {
+                return filterText === '' || $(this).data('name').indexOf(filterText) !== -1;
+            });
+        }
+
+        function render() {
+            var $rows = $table.find('tbody tr');
+            var total = 0;
+            var shown = 0;
+
+            $rows.each(function() {
+                var matches = filterText === '' || $(this).data('name').indexOf(filterText) !== -1;
+                if (matches) total++;
+                $(this).data('ptm-visible', matches ? 1 : 0).hide();
+            });
+
+            var $visible = $rows.filter(function() { return $(this).data('ptm-visible'); });
+            var totalPages = Math.max(1, Math.ceil($visible.length / PAGE_SIZE));
+            if (currentPage > totalPages) currentPage = totalPages;
+
+            var start = (currentPage - 1) * PAGE_SIZE;
+            $visible.each(function(i) {
+                if (i >= start && i < start + PAGE_SIZE) { $(this).show(); shown++; }
+            });
+
+            // Update count
+            var countText = total + ' player' + (total !== 1 ? 's' : '');
+            if (filterText) countText += ' matching "' + filterText + '"';
+            $('#ptm-players-count').text(countText);
+
+            // Pagination controls
+            var $pag = $('#ptm-players-pagination').empty();
+            if (totalPages <= 1) return;
+
+            $('<button class="button button-small">&laquo; Prev</button>')
+                .prop('disabled', currentPage <= 1)
+                .on('click', function() { currentPage--; render(); })
+                .appendTo($pag);
+
+            $('<span class="ptm-pagination-info">Page ' + currentPage + ' of ' + totalPages + '</span>').appendTo($pag);
+
+            $('<button class="button button-small">Next &raquo;</button>')
+                .prop('disabled', currentPage >= totalPages)
+                .on('click', function() { currentPage++; render(); })
+                .appendTo($pag);
+        }
+
+        $('#ptm-player-filter').on('input', function() {
+            filterText = $(this).val().trim().toLowerCase();
+            currentPage = 1;
+            render();
+        });
+
+        render();
+    })();
 
     // ── Custom meta field helpers
     function addMetaRow(key, value) {
@@ -473,10 +568,6 @@
 
     $(document).on('click', '.ptm-qr-modal-close, .ptm-qr-modal-overlay', function() {
         $('#ptm-qr-modal').fadeOut(150);
-    });
-
-    $(document).on('keydown', function(e) {
-        if (e.key === 'Escape') $('#ptm-qr-modal').fadeOut(150);
     });
 
     $(document).on('click', '#ptm-qr-download', function() {

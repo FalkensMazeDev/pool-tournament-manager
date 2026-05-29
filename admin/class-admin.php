@@ -384,13 +384,16 @@ class PTM_Admin {
         // Save custom meta fields
         $meta_keys   = isset( $_POST['meta_keys'] )   ? (array) $_POST['meta_keys']   : [];
         $meta_values = isset( $_POST['meta_values'] ) ? (array) $_POST['meta_values'] : [];
-        if ( $saved_id && ! empty( $meta_keys ) ) {
+        if ( $saved_id ) {
             $meta = [];
             foreach ( $meta_keys as $i => $k ) {
                 $k = sanitize_key( $k );
                 if ( $k !== '' ) {
                     $meta[ $k ] = $meta_values[ $i ] ?? '';
                 }
+            }
+            if ( ! empty( $_POST['do_not_notify'] ) ) {
+                $meta['do_not_notify'] = '1';
             }
             PTM_Player::save_meta( $saved_id, $meta );
         }
@@ -692,7 +695,7 @@ class PTM_Admin {
         ];
 
         $tpl_subject = PTM_Settings::get( 'notification_subject' ) ?: 'Your match is ready — Table {table}';
-        $tpl_body    = PTM_Settings::get( 'notification_body' );
+        $tpl_body    = PTM_Settings::get( 'notification_body' ) ?: '<p>Hi {player_name},</p><p>Your match is ready at <strong>Table {table}</strong> in <strong>{tournament}</strong>.</p><p>You are playing against <strong>{opponent}</strong>.</p><p>Use the scorer link to enter scores: {scorer_link}</p>';
 
         // Collect both players
         $players = [];
@@ -700,11 +703,13 @@ class PTM_Admin {
             $pid   = (int) ( $match[ 'player' . $slot . '_id' ] ?? 0 );
             $pname = $match[ 'player' . $slot . '_name' ] ?? '';
             if ( ! $pid ) continue;
-            $player  = PTM_Player::get( $pid );
+            $player      = PTM_Player::get( $pid );
+            $player_meta = PTM_Player::get_meta( $pid );
             $players[] = [
-                'slot'  => $slot,
-                'name'  => $pname,
-                'email' => $player['email'] ?? '',
+                'slot'          => $slot,
+                'name'          => $pname,
+                'email'         => $player['email'] ?? '',
+                'do_not_notify' => ! empty( $player_meta['do_not_notify'] ),
             ];
         }
 
@@ -727,8 +732,12 @@ class PTM_Admin {
         $skipped = [];
 
         foreach ( $players as $p ) {
+            if ( $p['do_not_notify'] ) {
+                $skipped[] = $p['name'] . ' (opted out)';
+                continue;
+            }
             if ( ! $p['email'] ) {
-                $skipped[] = $p['name'];
+                $skipped[] = $p['name'] . ' (no email)';
                 continue;
             }
 

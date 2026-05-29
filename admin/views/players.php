@@ -14,9 +14,15 @@ $all_meta = PTM_Player::get_all_meta();
 
     <hr class="wp-header-end">
 
-    <div class="ptm-players-layout">
+    <!-- Add Player button row -->
+    <div class="ptm-players-add-btn-row">
+        <button type="button" class="button button-primary" id="ptm-toggle-player-form">
+            + <?php _e( 'Add Player', 'ptm-tournaments' ); ?>
+        </button>
+    </div>
 
-        <!-- Add / Edit Player Form -->
+    <!-- Add / Edit Player Form (hidden by default) -->
+    <div class="ptm-player-form-box-wrap" id="ptm-player-form-wrap">
         <div class="ptm-players-form-box postbox">
             <div class="postbox-header">
                 <h2 id="ptm-player-form-title"><?php _e( 'Add Player', 'ptm-tournaments' ); ?></h2>
@@ -70,80 +76,99 @@ $all_meta = PTM_Player::get_all_meta();
                         </div>
                     </div>
 
+                    <div class="ptm-player-form-row">
+                        <label>
+                            <input type="checkbox" name="do_not_notify" id="player-do-not-notify" value="1">
+                            <?php _e( 'Do not notify (opt out of match email notifications)', 'ptm-tournaments' ); ?>
+                        </label>
+                    </div>
+
                     <div class="ptm-player-form-actions">
                         <button type="submit" class="button button-primary" id="ptm-player-submit">
                             <?php _e( 'Add Player', 'ptm-tournaments' ); ?>
                         </button>
-                        <button type="button" class="button" style="display:none" id="ptm-player-cancel">
-                            <?php _e( 'Cancel Edit', 'ptm-tournaments' ); ?>
+                        <button type="button" class="button" id="ptm-player-cancel">
+                            <?php _e( 'Cancel', 'ptm-tournaments' ); ?>
                         </button>
                     </div>
                 </form>
             </div>
         </div>
+    </div>
 
-        <!-- Player list -->
-        <div class="ptm-players-main">
-            <?php if ( empty( $players ) ) : ?>
-                <div class="ptm-empty-state">
-                    <span class="dashicons dashicons-groups"></span>
-                    <p><?php _e( 'No players in the registry yet.', 'ptm-tournaments' ); ?></p>
-                </div>
-            <?php else : ?>
-            <table class="wp-list-table widefat fixed striped ptm-table">
-                <thead>
-                    <tr>
-                        <th><?php _e( 'Name', 'ptm-tournaments' ); ?></th>
-                        <th><?php _e( 'Email', 'ptm-tournaments' ); ?></th>
-                        <th><?php _e( 'Phone', 'ptm-tournaments' ); ?></th>
-                        <th><?php _e( 'APA SL', 'ptm-tournaments' ); ?></th>
-                        <th><?php _e( 'Fargo', 'ptm-tournaments' ); ?></th>
-                        <th><?php _e( 'Actions', 'ptm-tournaments' ); ?></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ( $players as $p ) :
-                        $p_meta = $all_meta[ $p->id ] ?? [];
-                    ?>
-                    <tr>
-                        <td><strong><?php echo esc_html( $p->name ); ?></strong></td>
-                        <td><?php echo $p->email ? esc_html( $p->email ) : '—'; ?></td>
-                        <td><?php echo $p->phone ? esc_html( $p->phone ) : '—'; ?></td>
-                        <td><?php echo isset( $p->apa_skill_level ) && $p->apa_skill_level !== null ? esc_html( $p->apa_skill_level ) : '—'; ?></td>
-                        <td><?php echo isset( $p->fargo_rating ) && $p->fargo_rating !== null ? esc_html( $p->fargo_rating ) : '—'; ?></td>
-                        <td class="ptm-actions">
-                            <button type="button" class="button button-small ptm-edit-player"
-                                    data-id="<?php echo $p->id; ?>"
-                                    data-name="<?php echo esc_attr( $p->name ); ?>"
-                                    data-email="<?php echo esc_attr( $p->email ); ?>"
-                                    data-phone="<?php echo esc_attr( $p->phone ); ?>"
-                                    data-apa-number="<?php echo esc_attr( $p->apa_number ?? '' ); ?>"
-                                    data-apa-sl="<?php echo esc_attr( $p->apa_skill_level ?? '' ); ?>"
-                                    data-fargo-id="<?php echo esc_attr( $p->fargo_id ?? '' ); ?>"
-                                    data-fargo-rating="<?php echo esc_attr( $p->fargo_rating ?? '' ); ?>"
-                                    data-meta="<?php echo esc_attr( wp_json_encode( $p_meta ) ); ?>">
-                                <?php _e( 'Edit', 'ptm-tournaments' ); ?>
-                            </button>
-                            <a href="<?php echo admin_url( 'admin.php?page=ptm-players&action=stats&player_id=' . $p->id ); ?>"
-                               class="button button-small">
-                                <?php _e( 'Stats', 'ptm-tournaments' ); ?>
-                            </a>
-                            <form method="post" action="<?php echo admin_url( 'admin-post.php' ); ?>" style="display:inline">
-                                <?php wp_nonce_field( 'ptm_delete_player' ); ?>
-                                <input type="hidden" name="action"    value="ptm_delete_player">
-                                <input type="hidden" name="player_id" value="<?php echo $p->id; ?>">
-                                <button type="submit" class="button button-small button-link-delete"
-                                        onclick="return confirm('<?php _e( 'Delete this player?', 'ptm-tournaments' ); ?>')">
-                                    <?php _e( 'Delete', 'ptm-tournaments' ); ?>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-            <?php endif; ?>
+    <!-- Player list -->
+    <div class="ptm-players-main">
+        <?php if ( empty( $players ) ) : ?>
+            <div class="ptm-empty-state">
+                <span class="dashicons dashicons-groups"></span>
+                <p><?php _e( 'No players in the registry yet.', 'ptm-tournaments' ); ?></p>
+            </div>
+        <?php else : ?>
+
+        <!-- Toolbar: search + count -->
+        <div class="ptm-players-toolbar">
+            <input type="search" id="ptm-player-filter" placeholder="<?php esc_attr_e( 'Search players…', 'ptm-tournaments' ); ?>" class="regular-text">
+            <span class="ptm-players-count" id="ptm-players-count"></span>
         </div>
 
-    </div><!-- .ptm-players-layout -->
-</div>
+        <table class="wp-list-table widefat fixed striped ptm-table" id="ptm-players-table">
+            <thead>
+                <tr>
+                    <th><?php _e( 'Name', 'ptm-tournaments' ); ?></th>
+                    <th><?php _e( 'Email', 'ptm-tournaments' ); ?></th>
+                    <th><?php _e( 'Phone', 'ptm-tournaments' ); ?></th>
+                    <th><?php _e( 'APA SL', 'ptm-tournaments' ); ?></th>
+                    <th><?php _e( 'Fargo', 'ptm-tournaments' ); ?></th>
+                    <th><?php _e( 'Actions', 'ptm-tournaments' ); ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ( $players as $p ) :
+                    $p_meta = $all_meta[ $p->id ] ?? [];
+                ?>
+                <tr data-name="<?php echo esc_attr( strtolower( $p->name ) ); ?>">
+                    <td><strong><?php echo esc_html( $p->name ); ?></strong></td>
+                    <td><?php echo $p->email ? esc_html( $p->email ) : '—'; ?></td>
+                    <td><?php echo $p->phone ? esc_html( $p->phone ) : '—'; ?></td>
+                    <td><?php echo isset( $p->apa_skill_level ) && $p->apa_skill_level !== null ? esc_html( $p->apa_skill_level ) : '—'; ?></td>
+                    <td><?php echo isset( $p->fargo_rating ) && $p->fargo_rating !== null ? esc_html( $p->fargo_rating ) : '—'; ?></td>
+                    <td class="ptm-actions">
+                        <button type="button" class="button button-small ptm-edit-player"
+                                data-id="<?php echo $p->id; ?>"
+                                data-name="<?php echo esc_attr( $p->name ); ?>"
+                                data-email="<?php echo esc_attr( $p->email ); ?>"
+                                data-phone="<?php echo esc_attr( $p->phone ); ?>"
+                                data-apa-number="<?php echo esc_attr( $p->apa_number ?? '' ); ?>"
+                                data-apa-sl="<?php echo esc_attr( $p->apa_skill_level ?? '' ); ?>"
+                                data-fargo-id="<?php echo esc_attr( $p->fargo_id ?? '' ); ?>"
+                                data-fargo-rating="<?php echo esc_attr( $p->fargo_rating ?? '' ); ?>"
+                                data-do-not-notify="<?php echo ! empty( $p_meta['do_not_notify'] ) ? '1' : '0'; ?>"
+                                data-meta="<?php echo esc_attr( wp_json_encode( $p_meta ) ); ?>">
+                            <?php _e( 'Edit', 'ptm-tournaments' ); ?>
+                        </button>
+                        <a href="<?php echo admin_url( 'admin.php?page=ptm-players&action=stats&player_id=' . $p->id ); ?>"
+                           class="button button-small">
+                            <?php _e( 'Stats', 'ptm-tournaments' ); ?>
+                        </a>
+                        <form method="post" action="<?php echo admin_url( 'admin-post.php' ); ?>" style="display:inline">
+                            <?php wp_nonce_field( 'ptm_delete_player' ); ?>
+                            <input type="hidden" name="action"    value="ptm_delete_player">
+                            <input type="hidden" name="player_id" value="<?php echo $p->id; ?>">
+                            <button type="submit" class="button button-small button-link-delete"
+                                    onclick="return confirm('<?php _e( 'Delete this player?', 'ptm-tournaments' ); ?>')">
+                                <?php _e( 'Delete', 'ptm-tournaments' ); ?>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="ptm-pagination" id="ptm-players-pagination"></div>
+
+        <?php endif; ?>
+    </div>
+
+</div><!-- .wrap -->
