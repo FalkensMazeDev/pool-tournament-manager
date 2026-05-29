@@ -173,13 +173,22 @@
         });
     }
 
-    // ── QR popover
+    // ── QR popup window
     $(document).on('click', '.ptm-qr-toggle', function() {
-        const p = $(this).siblings('.ptm-qr-popover');
-        if (p.is(':visible')) { p.hide(); } else { $('.ptm-qr-popover').hide(); p.show(); }
-    });
-    $(document).on('click', function(e) {
-        if (!$(e.target).closest('.ptm-match-scorer-link').length) $('.ptm-qr-popover').hide();
+        const url = $(this).data('url') || '';
+        const svg = $(this).siblings('.ptm-qr-popover').find('svg')[0];
+        if (!svg) return;
+        const svgHtml = svg.outerHTML;
+        const popup = window.open('', 'ptm_qr_popup', 'width=320,height=420,resizable=yes,scrollbars=no');
+        if (!popup) return;
+        popup.document.write(
+            '<!DOCTYPE html><html><head><title>QR Code<\/title>' +
+            '<style>body{margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:sans-serif;background:#fff}' +
+            'svg{max-width:260px;height:auto}p{margin:12px 8px 4px;font-size:13px;word-break:break-all;text-align:center;color:#333}<\/style>' +
+            '<\/head><body>' + svgHtml + '<p>' + url + '<\/p><\/body><\/html>'
+        );
+        popup.document.close();
+        popup.focus();
     });
 
     // ── Player registry edit

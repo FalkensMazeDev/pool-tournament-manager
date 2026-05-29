@@ -52,7 +52,10 @@ $table_status = $tournament->status === 'active' ? PTM_Tables::get_table_status(
                         $scorer_url = home_url( '/' . PTM_Settings::get( 'scorer_base_slug' ) . '/' . $tm->score_token );
                     ?>
                     <div class="ptm-table-qr-wrap">
-                        <?php echo PTM_QR::svg( $scorer_url, 80 ); ?>
+                        <button type="button" class="ptm-qr-toggle ptm-table-qr-btn" data-url="<?php echo esc_attr( $scorer_url ); ?>" title="Click to enlarge QR code">
+                            <?php echo PTM_QR::svg( $scorer_url, 80 ); ?>
+                        </button>
+                        <div class="ptm-qr-popover" style="display:none"><?php echo PTM_QR::svg( $scorer_url, 220 ); ?></div>
                         <a href="<?php echo esc_url( $scorer_url ); ?>" target="_blank" class="ptm-token-link">📱 Scorer</a>
                     </div>
                     <?php endif; ?>
