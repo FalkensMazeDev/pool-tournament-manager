@@ -36,6 +36,12 @@ class PTM_REST {
             'permission_callback' => '__return_true',
         ] );
 
+        register_rest_route( $ns, '/tournament/(?P<id>\d+)/tables', [
+            'methods'             => WP_REST_Server::READABLE,
+            'callback'            => [ $this, 'get_table_status' ],
+            'permission_callback' => '__return_true',
+        ] );
+
         register_rest_route( $ns, '/match/(?P<token>[a-zA-Z0-9]+)/score', [
             'methods'             => WP_REST_Server::CREATABLE,
             'callback'            => [ $this, 'score_game' ],
@@ -115,6 +121,42 @@ class PTM_REST {
             'tournament_id' => $tournament_id,
             'last_updated'  => PTM_Match::get_last_updated( $tournament_id ),
             'waiting'       => PTM_Tables::count_waiting( $tournament_id ),
+        ], 200 );
+    }
+
+    public function get_table_status( WP_REST_Request $request ): WP_REST_Response {
+        $tournament_id = absint( $request['id'] );
+        $tournament    = PTM_Tournament::get( $tournament_id );
+
+        if ( ! $tournament ) {
+            return new WP_REST_Response( [ 'error' => 'Tournament not found.' ], 404 );
+        }
+
+        if ( ! (int) $tournament['is_public'] && ! PTM_Roles::can_view_tournament_admin() ) {
+            return new WP_REST_Response( [ 'error' => 'Forbidden.' ], 403 );
+        }
+
+        $raw    = PTM_Tables::get_table_status( $tournament_id );
+        $tables = [];
+        foreach ( $raw as $num => $match ) {
+            $tables[] = [
+                'table'         => $num,
+                'match'         => $match ? [
+                    'id'            => (int) $match['id'],
+                    'player1_name'  => $match['player1_name'] ?? 'TBD',
+                    'player2_name'  => $match['player2_name'] ?? 'TBD',
+                    'player1_score' => (int) $match['player1_score'],
+                    'player2_score' => (int) $match['player2_score'],
+                    'status'        => $match['status'],
+                    'bracket_side'  => $match['bracket_side'],
+                    'round'         => (int) $match['round'],
+                ] : null,
+            ];
+        }
+
+        return new WP_REST_Response( [
+            'tables'  => $tables,
+            'waiting' => PTM_Tables::count_waiting( $tournament_id ),
         ], 200 );
     }
 

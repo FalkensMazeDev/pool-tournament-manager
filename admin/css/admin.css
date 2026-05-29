@@ -549,3 +549,87 @@
     line-height: 1;
 }
 .ptm-edit-score-btn:hover { opacity: 1; }
+
+/* ----------------------------------------------------------------
+   Permalink row (edit tournament)
+   ---------------------------------------------------------------- */
+.ptm-permalink-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+.ptm-permalink-url {
+    font-size: 13px;
+    color: #2b6cb0;
+    word-break: break-all;
+}
+
+/* ----------------------------------------------------------------
+   QR Code modal
+   ---------------------------------------------------------------- */
+.ptm-qr-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.ptm-qr-modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+}
+.ptm-qr-modal-box {
+    position: relative;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+    padding: 0;
+    width: 320px;
+    max-width: 95vw;
+    z-index: 1;
+}
+.ptm-qr-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px 12px;
+    border-bottom: 1px solid #e2e8f0;
+}
+.ptm-qr-modal-header h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a202c;
+}
+.ptm-qr-modal-close {
+    background: none;
+    border: none;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    color: #718096;
+    padding: 0 4px;
+}
+.ptm-qr-modal-close:hover { color: #1a202c; }
+.ptm-qr-modal-body {
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+#ptm-qr-canvas canvas {
+    display: block;
+    border-radius: 4px;
+}
+.ptm-qr-url {
+    font-size: 11px;
+    color: #718096;
+    word-break: break-all;
+    text-align: center;
+    margin: 0;
+}

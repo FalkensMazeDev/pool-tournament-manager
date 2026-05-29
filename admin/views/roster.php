@@ -16,6 +16,51 @@ $is_active = $tournament->status !== 'draft';
 
     <div class="ptm-roster-layout">
 
+        <!-- Add player sidebar -->
+        <?php if ( ! $is_active ) : ?>
+        <div class="ptm-roster-sidebar">
+            <div class="postbox">
+                <div class="postbox-header"><h2><?php _e( 'Add Player', 'ptm-tournaments' ); ?></h2></div>
+                <div class="inside">
+                    <form method="post" action="<?php echo admin_url( 'admin-post.php' ); ?>">
+                        <?php wp_nonce_field( 'ptm_roster' ); ?>
+                        <input type="hidden" name="action"        value="ptm_add_tournament_player">
+                        <input type="hidden" name="tournament_id" value="<?php echo $tournament_id; ?>">
+                        <input type="hidden" name="player_id"     id="selected-player-id" value="">
+
+                        <p>
+                            <label><?php _e( 'Search Existing Player', 'ptm-tournaments' ); ?></label>
+                            <input type="text" id="ptm-player-search" class="regular-text"
+                                   placeholder="<?php _e( 'Type a name...', 'ptm-tournaments' ); ?>" autocomplete="off">
+                            <div id="ptm-player-suggestions" class="ptm-autocomplete"></div>
+                        </p>
+
+                        <p class="description" style="text-align:center; margin: 5px 0">— or —</p>
+
+                        <p>
+                            <label><?php _e( 'Add New Player', 'ptm-tournaments' ); ?></label>
+                            <input type="text" name="new_player_name" id="new-player-name" class="regular-text"
+                                   placeholder="<?php _e( 'Full name', 'ptm-tournaments' ); ?>">
+                        </p>
+
+                        <?php if ( $tournament->handicap_enabled ) : ?>
+                        <p>
+                            <label><?php _e( 'Skill Level', 'ptm-tournaments' ); ?></label>
+                            <input type="number" name="skill_level" min="1" max="9" class="small-text"
+                                   placeholder="1–9">
+                            <span class="description"><?php _e( '1 = lowest, 9 = highest', 'ptm-tournaments' ); ?></span>
+                        </p>
+                        <?php endif; ?>
+
+                        <button type="submit" class="button button-primary" style="width:100%;">
+                            <?php _e( 'Add to Tournament', 'ptm-tournaments' ); ?>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+
         <!-- Player list -->
         <div class="ptm-roster-main">
             <div class="postbox">
@@ -110,51 +155,6 @@ $is_active = $tournament->status !== 'draft';
                 </div>
             </div>
         </div>
-
-        <!-- Add player sidebar -->
-        <?php if ( ! $is_active ) : ?>
-        <div class="ptm-roster-sidebar">
-            <div class="postbox">
-                <div class="postbox-header"><h2><?php _e( 'Add Player', 'ptm-tournaments' ); ?></h2></div>
-                <div class="inside">
-                    <form method="post" action="<?php echo admin_url( 'admin-post.php' ); ?>">
-                        <?php wp_nonce_field( 'ptm_roster' ); ?>
-                        <input type="hidden" name="action"        value="ptm_add_tournament_player">
-                        <input type="hidden" name="tournament_id" value="<?php echo $tournament_id; ?>">
-                        <input type="hidden" name="player_id"     id="selected-player-id" value="">
-
-                        <p>
-                            <label><?php _e( 'Search Existing Player', 'ptm-tournaments' ); ?></label>
-                            <input type="text" id="ptm-player-search" class="regular-text"
-                                   placeholder="<?php _e( 'Type a name...', 'ptm-tournaments' ); ?>" autocomplete="off">
-                            <div id="ptm-player-suggestions" class="ptm-autocomplete"></div>
-                        </p>
-
-                        <p class="description" style="text-align:center; margin: 5px 0">— or —</p>
-
-                        <p>
-                            <label><?php _e( 'Add New Player', 'ptm-tournaments' ); ?></label>
-                            <input type="text" name="new_player_name" id="new-player-name" class="regular-text"
-                                   placeholder="<?php _e( 'Full name', 'ptm-tournaments' ); ?>">
-                        </p>
-
-                        <?php if ( $tournament->handicap_enabled ) : ?>
-                        <p>
-                            <label><?php _e( 'Skill Level', 'ptm-tournaments' ); ?></label>
-                            <input type="number" name="skill_level" min="1" max="9" class="small-text"
-                                   placeholder="1–9">
-                            <span class="description"><?php _e( '1 = lowest, 9 = highest', 'ptm-tournaments' ); ?></span>
-                        </p>
-                        <?php endif; ?>
-
-                        <button type="submit" class="button button-primary" style="width:100%;">
-                            <?php _e( 'Add to Tournament', 'ptm-tournaments' ); ?>
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-        <?php endif; ?>
 
     </div><!-- .ptm-roster-layout -->
 

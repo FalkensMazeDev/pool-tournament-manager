@@ -24,6 +24,22 @@ $sides     = $is_double ? [ 'winners', 'losers', 'finals' ] : [ 'winners' ];
         <?php endif; ?>
     </div>
 
+    <?php if ( $tournament->status === 'active' ) : ?>
+    <div class="ptm-pub-controls">
+        <label class="ptm-pub-autoupdate-label">
+            <input type="checkbox" id="ptm-autoupdate-<?php echo $tournament->id; ?>" class="ptm-autoupdate-toggle" data-tournament="<?php echo $tournament->id; ?>">
+            <?php _e( 'Auto-update every 30s', 'ptm-tournaments' ); ?>
+        </label>
+    </div>
+
+    <div class="ptm-pub-tables" id="ptm-pub-tables-<?php echo $tournament->id; ?>" data-tournament="<?php echo $tournament->id; ?>">
+        <div class="ptm-pub-tables-header"><?php _e( 'Tables', 'ptm-tournaments' ); ?></div>
+        <div class="ptm-pub-tables-grid" id="ptm-pub-tables-grid-<?php echo $tournament->id; ?>">
+            <div class="ptm-pub-tables-loading"><?php _e( 'Loading table status…', 'ptm-tournaments' ); ?></div>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <?php if ( $is_double ) : ?>
     <div class="ptm-bracket-public-tabs">
         <button class="ptm-pub-tab active" data-tab="winners"><?php _e( 'Winners', 'ptm-tournaments' ); ?></button>
