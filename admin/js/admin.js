@@ -173,22 +173,32 @@
         });
     }
 
-    // ── QR popup window
+    // ── QR modal overlay
+    $('body').append(
+        '<div id="ptm-qr-modal" style="display:none" role="dialog" aria-modal="true">' +
+        '<div id="ptm-qr-modal-backdrop"></div>' +
+        '<div id="ptm-qr-modal-box">' +
+        '<button id="ptm-qr-modal-close" aria-label="Close">&times;<\/button>' +
+        '<div id="ptm-qr-modal-svg"><\/div>' +
+        '<p id="ptm-qr-modal-url"><\/p>' +
+        '<\/div><\/div>'
+    );
+
     $(document).on('click', '.ptm-qr-toggle', function() {
         const url = $(this).data('url') || '';
         const svg = $(this).siblings('.ptm-qr-popover').find('svg')[0];
         if (!svg) return;
-        const svgHtml = svg.outerHTML;
-        const popup = window.open('', 'ptm_qr_popup', 'width=320,height=420,resizable=yes,scrollbars=no');
-        if (!popup) return;
-        popup.document.write(
-            '<!DOCTYPE html><html><head><title>QR Code<\/title>' +
-            '<style>body{margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:sans-serif;background:#fff}' +
-            'svg{max-width:260px;height:auto}p{margin:12px 8px 4px;font-size:13px;word-break:break-all;text-align:center;color:#333}<\/style>' +
-            '<\/head><body>' + svgHtml + '<p>' + url + '<\/p><\/body><\/html>'
-        );
-        popup.document.close();
-        popup.focus();
+        $('#ptm-qr-modal-svg').html(svg.outerHTML);
+        $('#ptm-qr-modal-url').text(url);
+        $('#ptm-qr-modal').show();
+    });
+
+    $(document).on('click', '#ptm-qr-modal-close, #ptm-qr-modal-backdrop', function() {
+        $('#ptm-qr-modal').hide();
+    });
+
+    $(document).on('keydown', function(e) {
+        if (e.key === 'Escape') $('#ptm-qr-modal').hide();
     });
 
     // ── Player registry edit
