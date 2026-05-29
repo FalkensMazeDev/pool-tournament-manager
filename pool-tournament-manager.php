@@ -1,10 +1,11 @@
 <?php
 /**
  * Plugin Name: Pool Tournament Manager
- * Plugin URI:  https://github.com/pool-tournament-manager
+ * Plugin URI:  https://www.billiardgreg.com
  * Description: Pool tournament management system. Supports 8-ball, 9-ball, and 10-ball pool tournaments with single and double elimination brackets, live scoring, and public spectator views.
  * Version:     1.0.0
- * Author:      Pool Tournament Manager
+ * Author:      Greg Whitehead
+ * Author URI:  https://www.billiardgreg.com
  * Text Domain: ptm-tournaments
  * License:     GPL-2.0+
  */

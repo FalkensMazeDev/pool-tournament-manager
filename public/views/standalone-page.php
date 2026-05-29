@@ -12,12 +12,18 @@
 
 <script>
     var PTM = {
-        restUrl: <?php echo wp_json_encode( rest_url( 'gdc/v1/' ) ); ?>,
-        pollInterval: <?php echo (int) PTM_Settings::get( 'poll_interval_ms' ); ?>
+        restUrl:    <?php echo wp_json_encode( rest_url( 'gdc/v1/' ) ); ?>,
+        pollInterval: <?php echo (int) PTM_Settings::get( 'poll_interval_ms' ); ?>,
+        subPage:    <?php echo wp_json_encode( $sub_page ?? 'bracket' ); ?>,
+        resultsUrl: <?php echo wp_json_encode( isset( $tournament ) ? PTM_Tournament::get_url( (array) $tournament, 'results' ) : '' ); ?>
     };
 </script>
 <script src="<?php echo esc_url( includes_url( 'js/jquery/jquery.min.js' ) ); ?>"></script>
 <script src="<?php echo esc_url( PTM_PLUGIN_URL . 'public/js/public.js?v=' . PTM_VERSION ); ?>"></script>
+
+<footer class="ptm-standalone-footer">
+    &copy; <?php echo date( 'Y' ); ?> <a href="https://www.billiardgreg.com" target="_blank" rel="noopener noreferrer">Greg Whitehead</a>
+</footer>
 
 </body>
 </html>
