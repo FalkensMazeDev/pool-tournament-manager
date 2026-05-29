@@ -6,11 +6,16 @@
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-$total_pot   = 0;
-$fee         = (float) $tournament->entrance_fee;
 $player_count = PTM_Tournament::get_player_count( $tournament_id );
-if ( $fee > 0 ) {
-    $total_pot = $fee * $player_count;
+// Use the pre-calculated pot from calculate_payouts (accounts for director_fee and money_added).
+// Fall back to entrance_fee * players if no payout rules are defined.
+$total_pot = 0;
+if ( ! empty( $payouts ) ) {
+    $total_pot = (float) $payouts[0]['total_pot'];
+} elseif ( (float) $tournament->entrance_fee > 0 ) {
+    $director_fee = (float) ( $tournament->director_fee ?? 0 );
+    $money_added  = (float) ( $tournament->money_added ?? 0 );
+    $total_pot    = max( 0, $tournament->entrance_fee - $director_fee ) * $player_count + $money_added;
 }
 
 // Group results by finish position for tied places
@@ -116,13 +121,10 @@ foreach ( $payouts as $rule ) {
                         $place_label = $pos . $suffix;
                     }
 
-                    // Payout for this position
+                    // Payout for this position — amount is pre-calculated by calculate_payouts()
                     $prize_amount = 0;
-                    if ( $total_pot > 0 && isset( $payout_by_pos[ $pos ] ) ) {
-                        $rule = $payout_by_pos[ $pos ];
-                        // Each player at this position level gets pct% of the pot
-                        // (e.g. "3rd-4th: 10%" means EACH of 3rd and 4th gets 10%)
-                        $prize_amount = round( $total_pot * ( (float) $rule['pct'] / 100 ), 2 );
+                    if ( isset( $payout_by_pos[ $pos ] ) ) {
+                        $prize_amount = (float) $payout_by_pos[ $pos ]['amount'];
                     }
 
                     foreach ( $players as $i => $player ) :
