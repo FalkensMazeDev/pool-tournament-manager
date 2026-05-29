@@ -755,9 +755,9 @@ class PTM_Admin {
             $subject = str_replace( array_keys( $replacements ), array_values( $replacements ), $tpl_subject );
             $body    = str_replace( array_keys( $replacements ), array_values( $replacements ), $tpl_body );
 
-            // If the saved template has no HTML block tags, convert newlines to <br> so
-            // plain-text templates still render correctly in email clients.
-            if ( ! preg_match( '/<(p|br|div|h[1-6]|ul|ol|li)\b/i', $body ) ) {
+            // If the body contains no HTML tags at all, treat it as plain text:
+            // escape it and convert newlines to <br> so it renders correctly.
+            if ( ! preg_match( '/<[a-z]/i', $body ) ) {
                 $body = nl2br( esc_html( $body ) );
             }
 
