@@ -698,17 +698,18 @@ class PTM_Admin {
         $tpl_subject = PTM_Settings::get( 'notification_subject' ) ?: 'Your match is ready — Table {table}';
         $tpl_body    = PTM_Settings::get( 'notification_body' ) ?: '<p>Hi {player_name},</p><p>Your match is ready at <strong>Table {table}</strong> in <strong>{tournament}</strong>.</p><p>You are playing against <strong>{opponent}</strong>.</p><p>Use the scorer link to enter scores: {scorer_link}</p>';
 
-        // Collect both players
+        // Collect both players — PTM_Match::get() does no JOIN so we fetch
+        // each player record directly to get name, email and meta.
         $players = [];
         foreach ( [ 1, 2 ] as $slot ) {
-            $pid   = (int) ( $match[ 'player' . $slot . '_id' ] ?? 0 );
+            $pid = (int) ( $match[ 'player' . $slot . '_id' ] ?? 0 );
             if ( ! $pid ) continue;
-            $player      = PTM_Player::get( $pid );
+            $player = PTM_Player::get( $pid );
+            if ( ! $player ) continue;
             $player_meta = PTM_Player::get_meta( $pid );
-            $pname = $player['name'] ?? $match[ 'player' . $slot . '_name' ] ?? '';
             $players[] = [
                 'slot'          => $slot,
-                'name'          => $pname,
+                'name'          => $player['name'],
                 'email'         => $player['email'] ?? '',
                 'do_not_notify' => ! empty( $player_meta['do_not_notify'] ),
             ];
