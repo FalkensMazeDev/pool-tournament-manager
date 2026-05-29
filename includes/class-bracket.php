@@ -248,8 +248,8 @@ class PTM_Bracket {
             'bracket_side'        => 'finals',
             'round'               => 2,
             'match_number'        => 1,
-            'race_to_p1'          => (int) $tournament['race_to_winners'],
-            'race_to_p2'          => (int) $tournament['race_to_winners'],
+            'race_to_p1'          => (int) $tournament['race_to_losers'],
+            'race_to_p2'          => (int) $tournament['race_to_losers'],
             'next_match_id'       => null,
             'loser_next_match_id' => null,
         ] );
