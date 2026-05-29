@@ -84,6 +84,11 @@ $table_status = $tournament->status === 'active' ? PTM_Tables::get_table_status(
            class="button" style="margin-left:6px;">
             📋 <?php _e( 'View Results', 'ptm-tournaments' ); ?>
         </a>
+        <button type="button" id="ptm-reopen-tournament"
+                class="button" style="margin-left:6px;"
+                data-tournament="<?php echo $tournament_id; ?>">
+            ↩ <?php _e( 'Reopen Tournament', 'ptm-tournaments' ); ?>
+        </button>
         <?php endif; ?>
         <?php endif; ?>
     </div>

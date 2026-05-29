@@ -509,3 +509,18 @@
 
 .ptm-payout-note { font-size: 12px; color: #718096; margin-bottom: 12px; font-style: italic; }
 .ptm-payout-remainder { font-size: 13px; color: #718096; margin-top: 10px; }
+
+/* Standalone page footer */
+.ptm-standalone-footer {
+    margin-top: 48px;
+    padding: 16px 24px;
+    text-align: center;
+    font-size: 12px;
+    color: #718096;
+    border-top: 1px solid #e2e8f0;
+}
+.ptm-standalone-footer a {
+    color: #4a90d9;
+    text-decoration: none;
+}
+.ptm-standalone-footer a:hover { text-decoration: underline; }

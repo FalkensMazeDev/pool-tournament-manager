@@ -481,6 +481,30 @@
         link.click();
     });
 
+    // ── Reopen Tournament ─────────────────────────────────────────────────────
+    $(document).on('click', '#ptm-reopen-tournament', function() {
+        const btn = $(this);
+        const tid = btn.data('tournament');
+        if (!confirm('Reopen this tournament? This will clear all player finish positions and set the tournament status back to active.')) return;
+        btn.prop('disabled', true).text('Reopening...');
+        $.ajax({
+            url: PTM.adminUrl, method: 'POST',
+            data: { action: 'ptm_reopen_tournament', nonce: PTM.nonce, tournament_id: tid },
+            success: function(res) {
+                if (res.success) {
+                    location.reload();
+                } else {
+                    btn.prop('disabled', false).text('↩ Reopen Tournament');
+                    alert('Error: ' + (res.data.message || 'Unknown error'));
+                }
+            },
+            error: function() {
+                btn.prop('disabled', false).text('↩ Reopen Tournament');
+                alert('Network error.');
+            }
+        });
+    });
+
     // ── Finalize Results ──────────────────────────────────────────────────────
     $(document).on('click', '#ptm-finalize-results', function() {
         const btn = $(this);

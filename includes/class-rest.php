@@ -118,9 +118,10 @@ class PTM_REST {
         }
 
         return new WP_REST_Response( [
-            'tournament_id' => $tournament_id,
-            'last_updated'  => PTM_Match::get_last_updated( $tournament_id ),
-            'waiting'       => PTM_Tables::count_waiting( $tournament_id ),
+            'tournament_id'     => $tournament_id,
+            'tournament_status' => $tournament ? $tournament['status'] : null,
+            'last_updated'      => PTM_Match::get_last_updated( $tournament_id ),
+            'waiting'           => PTM_Tables::count_waiting( $tournament_id ),
         ], 200 );
     }
 

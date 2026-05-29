@@ -19,6 +19,8 @@ class PTM_Admin {
         add_action( 'wp_ajax_ptm_admin_score',          [ $this, 'ajax_admin_score' ] );
         add_action( 'wp_ajax_ptm_correct_score',         [ $this, 'ajax_correct_score' ] );
         add_action( 'wp_ajax_ptm_finalize_results',      [ $this, 'ajax_finalize_results' ] );
+        add_action( 'wp_ajax_ptm_reopen_tournament',     [ $this, 'ajax_reopen_tournament' ] );
+        add_filter( 'admin_footer_text',                 [ $this, 'admin_footer_text' ] );
     }
 
     // ----------------------------------------------------------------
@@ -613,5 +615,51 @@ class PTM_Admin {
         }
 
         wp_send_json_success( $result );
+    }
+
+    public function ajax_reopen_tournament() {
+        check_ajax_referer( 'ptm_admin', 'nonce' );
+
+        if ( ! PTM_Roles::can_manage_tournaments() ) {
+            wp_send_json_error( [ 'message' => 'Permission denied.' ] );
+            return;
+        }
+
+        $tournament_id = absint( $_POST['tournament_id'] ?? 0 );
+        if ( ! $tournament_id ) {
+            wp_send_json_error( [ 'message' => 'Invalid tournament ID.' ] );
+            return;
+        }
+
+        $tournament = PTM_Tournament::get( $tournament_id );
+        if ( ! $tournament ) {
+            wp_send_json_error( [ 'message' => 'Tournament not found.' ] );
+            return;
+        }
+
+        global $wpdb;
+
+        // Clear all finish positions for this tournament's players
+        $wpdb->query(
+            $wpdb->prepare(
+                "UPDATE {$wpdb->prefix}ptm_player_stats
+                 SET finish_position = NULL
+                 WHERE tournament_id = %d",
+                $tournament_id
+            )
+        );
+
+        // Revert tournament status to active
+        PTM_Tournament::set_status( $tournament_id, 'active' );
+
+        wp_send_json_success( [ 'message' => 'Tournament reopened successfully.' ] );
+    }
+
+    public function admin_footer_text( string $text ): string {
+        $screen = get_current_screen();
+        if ( ! $screen || strpos( $screen->id, 'ptm' ) === false ) {
+            return $text;
+        }
+        return '&copy; ' . date( 'Y' ) . ' <a href="https://www.billiardgreg.com" target="_blank" rel="noopener noreferrer">Greg Whitehead</a> &mdash; Pool Tournament Manager';
     }
 }

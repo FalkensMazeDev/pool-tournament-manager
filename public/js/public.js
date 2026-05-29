@@ -19,6 +19,8 @@
         checkForUpdates(tournamentId);
     }
 
+    var tournamentStatus = {};
+
     function checkForUpdates(tournamentId) {
         fetch(PTM.restUrl + 'tournament/' + tournamentId + '/updated')
             .then(function(r) { return r.json(); })
@@ -29,6 +31,16 @@
                 var changed = lastUpdated[key] && data.last_updated !== lastUpdated[key];
 
                 lastUpdated[key] = data.last_updated;
+
+                // Redirect to results page when tournament transitions to complete
+                if (data.tournament_status === 'complete') {
+                    var prevStatus = tournamentStatus[key];
+                    if (prevStatus && prevStatus !== 'complete' && PTM.subPage === 'bracket' && PTM.resultsUrl) {
+                        window.location.href = PTM.resultsUrl;
+                        return;
+                    }
+                }
+                tournamentStatus[key] = data.tournament_status;
 
                 if (changed) {
                     refreshBracket(tournamentId);
