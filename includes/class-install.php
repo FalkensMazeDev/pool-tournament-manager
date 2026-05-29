@@ -4,7 +4,7 @@ defined( 'ABSPATH' ) || exit;
 class PTM_Install {
 
     const DB_VERSION_OPTION = 'ptm_db_version';
-    const DB_VERSION        = '1.2.0';
+    const DB_VERSION        = '1.3.0';
 
     public static function activate() {
         self::create_tables();
@@ -50,7 +50,6 @@ class PTM_Install {
                 num_tables       TINYINT UNSIGNED NOT NULL DEFAULT 4,
                 entrance_fee     DECIMAL(8,2)     NOT NULL DEFAULT 0.00,
                 slug             VARCHAR(220)             DEFAULT NULL,
-            slug             VARCHAR(220)             DEFAULT NULL,
                 tournament_date  DATE                      DEFAULT NULL,
                 notes            TEXT                      DEFAULT NULL,
                 created_by       BIGINT UNSIGNED           DEFAULT NULL,
@@ -65,7 +64,7 @@ class PTM_Install {
             dbDelta( "CREATE TABLE {$wpdb->prefix}ptm_payout_rules (
                 id              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
                 tournament_id   BIGINT UNSIGNED NOT NULL,
-                position_label  VARCHAR(20)     NOT NULL,
+                position_label  VARCHAR(50)     NOT NULL,
                 position_from   SMALLINT UNSIGNED NOT NULL,
                 position_to     SMALLINT UNSIGNED NOT NULL,
                 pct             DECIMAL(5,2)    NOT NULL DEFAULT 0.00,
@@ -200,6 +199,18 @@ class PTM_Install {
             race_to_lower       TINYINT UNSIGNED NOT NULL,
             PRIMARY KEY (id),
             UNIQUE KEY tournament_matchup (tournament_id, skill_level_higher, skill_level_lower),
+            KEY tournament_id (tournament_id)
+        ) $charset;" );
+
+        // Payout rules — prize structure per tournament
+        dbDelta( "CREATE TABLE {$wpdb->prefix}ptm_payout_rules (
+            id              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            tournament_id   BIGINT UNSIGNED NOT NULL,
+            position_label  VARCHAR(50)     NOT NULL,
+            position_from   SMALLINT UNSIGNED NOT NULL,
+            position_to     SMALLINT UNSIGNED NOT NULL,
+            pct             DECIMAL(5,2)    NOT NULL DEFAULT 0.00,
+            PRIMARY KEY (id),
             KEY tournament_id (tournament_id)
         ) $charset;" );
 

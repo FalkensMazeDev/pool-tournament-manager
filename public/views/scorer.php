@@ -275,13 +275,26 @@
             scoreAction(parseInt(this.dataset.slot, 10), 'remove');
         });
     });
-    // QR toggle
+    // QR popup window
     var qrToggle = document.getElementById('ptm-qr-toggle');
     var qrSheet  = document.getElementById('ptm-qr-sheet');
-    var qrClose  = document.getElementById('ptm-qr-close');
     if (qrToggle && qrSheet) {
-        qrToggle.addEventListener('click', function() { qrSheet.style.display = 'flex'; });
-        qrClose.addEventListener('click',  function() { qrSheet.style.display = 'none'; });
+        qrToggle.addEventListener('click', function() {
+            var svg = qrSheet.querySelector('svg');
+            var urlEl = qrSheet.querySelector('.ptm-scorer-qr-url');
+            if (!svg) return;
+            var url = urlEl ? urlEl.textContent : '';
+            var popup = window.open('', 'ptm_qr_popup', 'width=320,height=420,resizable=yes,scrollbars=no');
+            if (!popup) return;
+            popup.document.write(
+                '<!DOCTYPE html><html><head><title>QR Code<\/title>' +
+                '<style>body{margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:sans-serif;background:#fff}' +
+                'svg{max-width:260px;height:auto}p{margin:12px 8px 4px;font-size:13px;word-break:break-all;text-align:center;color:#333}<\/style>' +
+                '<\/head><body>' + svg.outerHTML + '<p>' + url + '<\/p><\/body><\/html>'
+            );
+            popup.document.close();
+            popup.focus();
+        });
     }
 })();
 </script>
