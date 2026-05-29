@@ -70,6 +70,13 @@ $all_meta = PTM_Player::get_all_meta();
                         </div>
                     </div>
 
+                    <div class="ptm-player-form-row">
+                        <label>
+                            <input type="checkbox" name="do_not_notify" id="player-do-not-notify" value="1">
+                            <?php _e( 'Do not notify (opt out of match email notifications)', 'ptm-tournaments' ); ?>
+                        </label>
+                    </div>
+
                     <div class="ptm-player-form-actions">
                         <button type="submit" class="button button-primary" id="ptm-player-submit">
                             <?php _e( 'Add Player', 'ptm-tournaments' ); ?>
@@ -121,6 +128,7 @@ $all_meta = PTM_Player::get_all_meta();
                                     data-apa-sl="<?php echo esc_attr( $p->apa_skill_level ?? '' ); ?>"
                                     data-fargo-id="<?php echo esc_attr( $p->fargo_id ?? '' ); ?>"
                                     data-fargo-rating="<?php echo esc_attr( $p->fargo_rating ?? '' ); ?>"
+                                    data-do-not-notify="<?php echo ! empty( $p_meta['do_not_notify'] ) ? '1' : '0'; ?>"
                                     data-meta="<?php echo esc_attr( wp_json_encode( $p_meta ) ); ?>">
                                 <?php _e( 'Edit', 'ptm-tournaments' ); ?>
                             </button>

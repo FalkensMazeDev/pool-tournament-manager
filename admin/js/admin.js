@@ -353,6 +353,7 @@
         $('#player-apa-sl').val(btn.data('apa-sl') || '');
         $('#player-fargo-id').val(btn.data('fargo-id') || '');
         $('#player-fargo-rating').val(btn.data('fargo-rating') || '');
+        $('#player-do-not-notify').prop('checked', btn.data('do-not-notify') == '1');
         // Load custom meta
         $('#ptm-meta-fields').empty();
         const meta = btn.data('meta') || {};
@@ -364,6 +365,7 @@
     $('#ptm-player-cancel').on('click', function() {
         $('#edit-player-id').val(''); $('#player-name, #player-email, #player-phone').val('');
         $('#player-apa-number, #player-apa-sl, #player-fargo-id, #player-fargo-rating').val('');
+        $('#player-do-not-notify').prop('checked', false);
         $('#ptm-meta-fields').empty();
         $('#ptm-player-form-title').text('Add Player'); $('#ptm-player-submit').text('Add Player'); $(this).hide();
     });
