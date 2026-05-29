@@ -65,6 +65,12 @@ class PTM_REST {
             'permission_callback' => '__return_true',
         ] );
 
+        register_rest_route( $ns, '/tournament/(?P<id>\d+)/table/(?P<table>\d+)', [
+            'methods'             => WP_REST_Server::READABLE,
+            'callback'            => [ $this, 'get_table_match' ],
+            'permission_callback' => '__return_true',
+        ] );
+
         register_rest_route( $ns, '/tournament/(?P<id>\d+)/generate', [
             'methods'             => WP_REST_Server::CREATABLE,
             'callback'            => [ $this, 'generate_bracket' ],
@@ -105,6 +111,59 @@ class PTM_REST {
         return new WP_REST_Response( [
             'tournament' => $tournament,
             'bracket'    => PTM_Bracket::get_bracket( $tournament_id ),
+        ], 200 );
+    }
+
+    public function get_table_match( WP_REST_Request $request ): WP_REST_Response {
+        global $wpdb;
+        $tournament_id = absint( $request['id'] );
+        $table_number  = absint( $request['table'] );
+
+        $tournament = PTM_Tournament::get( $tournament_id );
+        if ( ! $tournament ) {
+            return new WP_REST_Response( [ 'error' => 'Tournament not found.' ], 404 );
+        }
+        if ( ! (int) $tournament['is_public'] && ! PTM_Roles::can_view_tournament_admin() ) {
+            return new WP_REST_Response( [ 'error' => 'Forbidden.' ], 403 );
+        }
+
+        $match = $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT m.*, p1.name AS player1_name, p2.name AS player2_name
+                 FROM {$wpdb->prefix}ptm_matches m
+                 LEFT JOIN {$wpdb->prefix}ptm_players p1 ON p1.id = m.player1_id
+                 LEFT JOIN {$wpdb->prefix}ptm_players p2 ON p2.id = m.player2_id
+                 WHERE m.tournament_id = %d
+                   AND m.table_number  = %d
+                   AND m.status IN ('in_progress', 'pending')
+                 LIMIT 1",
+                $tournament_id,
+                $table_number
+            ),
+            ARRAY_A
+        );
+
+        return new WP_REST_Response( [
+            'tournament_id'   => $tournament_id,
+            'tournament_name' => $tournament['name'],
+            'game_type'       => $tournament['game_type'],
+            'table'           => $table_number,
+            'match'           => $match ? [
+                'id'             => (int) $match['id'],
+                'token'          => $match['score_token'],
+                'player1_name'   => $match['player1_name'] ?? 'TBD',
+                'player2_name'   => $match['player2_name'] ?? 'TBD',
+                'player1_id'     => (int) $match['player1_id'],
+                'player2_id'     => (int) $match['player2_id'],
+                'player1_score'  => (int) $match['player1_score'],
+                'player2_score'  => (int) $match['player2_score'],
+                'race_to_player1'=> (int) $match['race_to_player1'],
+                'race_to_player2'=> (int) $match['race_to_player2'],
+                'bracket_side'   => $match['bracket_side'],
+                'round'          => (int) $match['round'],
+                'status'         => $match['status'],
+                'winner_id'      => $match['winner_id'] ? (int) $match['winner_id'] : null,
+            ] : null,
         ], 200 );
     }
 

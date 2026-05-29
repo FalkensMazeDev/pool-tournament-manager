@@ -9,6 +9,7 @@ class PTM_Public {
         add_action( 'init',                     [ $this, 'add_rewrite_rules' ] );
         add_filter( 'query_vars',               [ $this, 'add_query_vars' ] );
         add_action( 'template_redirect',        [ $this, 'handle_scorer_page' ] );
+        add_action( 'template_redirect',        [ $this, 'handle_table_page' ] );
         add_action( 'template_redirect',        [ $this, 'handle_bracket_page' ] );
         add_action( 'wp_enqueue_scripts',       [ $this, 'enqueue_scripts' ] );
         add_shortcode( 'ptm_tournaments',       [ $this, 'shortcode_tournament_list' ] );
@@ -25,6 +26,14 @@ class PTM_Public {
         $scorer_slug     = preg_quote( PTM_Settings::get( 'scorer_base_slug' ),      '#' );
         $tourney_slug    = preg_quote( PTM_Settings::get( 'tournament_base_slug' ),  '#' );
         $results_slug    = preg_quote( PTM_Settings::get( 'results_sub_slug' ),      '#' );
+        $table_slug      = preg_quote( PTM_Settings::get( 'table_base_slug' ), '#' );
+
+        // Table view URL
+        add_rewrite_rule(
+            '^' . $table_slug . '/([^/]+)/([0-9]+)/?$',
+            'index.php?ptm_table_slug=$matches[1]&ptm_table_number=$matches[2]',
+            'top'
+        );
 
         // Scorer token URL
         add_rewrite_rule(
@@ -53,6 +62,8 @@ class PTM_Public {
         $vars[] = 'ptm_tournament';       // legacy ?ptm_tournament=N still works
         $vars[] = 'ptm_tournament_slug';  // pretty /tournament/{slug}/
         $vars[] = 'ptm_page';             // sub-page (results, etc.)
+        $vars[] = 'ptm_table_slug';
+        $vars[] = 'ptm_table_number';
         return $vars;
     }
 
@@ -245,6 +256,34 @@ class PTM_Public {
             'restUrl'      => rest_url( 'gdc/v1/' ),
             'pollInterval' => 5000, // 5 seconds
         ] );
+    }
+
+    public function handle_table_page() {
+        $slug         = get_query_var( 'ptm_table_slug' );
+        $table_number = absint( get_query_var( 'ptm_table_number' ) );
+
+        if ( ! $slug || ! $table_number ) return;
+
+        if ( $slug ) {
+            $t_raw = PTM_Tournament::get_by_slug( $slug );
+            if ( ! $t_raw && is_numeric( $slug ) ) {
+                $t_raw = PTM_Tournament::get( (int) $slug );
+            }
+        }
+
+        if ( ! $t_raw ) {
+            wp_die( __( 'Tournament not found.', 'ptm-tournaments' ), '', [ 'response' => 404 ] );
+        }
+
+        $tournament    = (object) $t_raw;
+        $tournament_id = (int) $tournament->id;
+
+        if ( ! $tournament->is_public && ! PTM_Roles::can_manage_tournaments() ) {
+            wp_die( __( 'Tournament not found.', 'ptm-tournaments' ), '', [ 'response' => 404 ] );
+        }
+
+        require_once PTM_PLUGIN_DIR . 'public/views/table-view.php';
+        exit;
     }
 
     private function page_has_ptm_shortcode() {

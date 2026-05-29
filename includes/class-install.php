@@ -4,7 +4,7 @@ defined( 'ABSPATH' ) || exit;
 class PTM_Install {
 
     const DB_VERSION_OPTION = 'ptm_db_version';
-    const DB_VERSION        = '1.4.0';
+    const DB_VERSION        = '1.5.0';
 
     public static function activate() {
         self::create_tables();
@@ -34,6 +34,34 @@ class PTM_Install {
         global $wpdb;
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
         $charset = $wpdb->get_charset_collate();
+
+        if ( version_compare( $from, '1.5.0', '<' ) ) {
+            dbDelta( "CREATE TABLE {$wpdb->prefix}ptm_tournaments (
+                id               BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+                name             VARCHAR(200)    NOT NULL,
+                game_type        ENUM('8ball','9ball','10ball') NOT NULL,
+                bracket_type     ENUM('single_elim','double_elim') NOT NULL,
+                status           ENUM('draft','active','complete') NOT NULL DEFAULT 'draft',
+                race_to_winners  TINYINT UNSIGNED NOT NULL DEFAULT 5,
+                race_to_losers   TINYINT UNSIGNED NOT NULL DEFAULT 4,
+                handicap_enabled TINYINT(1)       NOT NULL DEFAULT 0,
+                is_public        TINYINT(1)       NOT NULL DEFAULT 1,
+                tournament_date  DATE                      DEFAULT NULL,
+                num_tables       TINYINT UNSIGNED NOT NULL DEFAULT 4,
+                entrance_fee     DECIMAL(8,2)     NOT NULL DEFAULT 0.00,
+                director_fee     DECIMAL(8,2)     NOT NULL DEFAULT 0.00,
+                money_added      DECIMAL(8,2)     NOT NULL DEFAULT 0.00,
+                slug             VARCHAR(220)             DEFAULT NULL,
+                notes            TEXT                      DEFAULT NULL,
+                created_by       BIGINT UNSIGNED           DEFAULT NULL,
+                created_at       DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at       DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                PRIMARY KEY (id),
+                KEY status (status),
+                KEY tournament_date (tournament_date),
+                UNIQUE KEY slug (slug)
+            ) $charset;" );
+        }
 
         if ( version_compare( $from, '1.2.0', '<' ) ) {
             // Add entrance_fee to existing tournaments
@@ -179,6 +207,8 @@ class PTM_Install {
             tournament_date  DATE                      DEFAULT NULL,
             num_tables       TINYINT UNSIGNED NOT NULL DEFAULT 4,
             entrance_fee     DECIMAL(8,2)     NOT NULL DEFAULT 0.00,
+            director_fee     DECIMAL(8,2)     NOT NULL DEFAULT 0.00,
+            money_added      DECIMAL(8,2)     NOT NULL DEFAULT 0.00,
             slug             VARCHAR(220)             DEFAULT NULL,
             notes            TEXT                      DEFAULT NULL,
             created_by       BIGINT UNSIGNED           DEFAULT NULL,

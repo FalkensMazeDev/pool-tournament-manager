@@ -205,6 +205,10 @@ class PTM_Tournament {
             $clean['num_tables'] = max( 1, min( 20, absint( $data['num_tables'] ) ) );
         if ( isset( $data['entrance_fee'] ) )
             $clean['entrance_fee'] = max( 0, (float) $data['entrance_fee'] );
+        if ( isset( $data['director_fee'] ) )
+            $clean['director_fee'] = max( 0, (float) $data['director_fee'] );
+        if ( isset( $data['money_added'] ) )
+            $clean['money_added'] = max( 0, (float) $data['money_added'] );
         if ( isset( $data['slug'] ) && $data['slug'] !== '' )
             $clean['slug'] = sanitize_title( $data['slug'] );
         if ( isset( $data['handicap_enabled'] ) )
@@ -226,11 +230,12 @@ class PTM_Tournament {
             'name'             => '%s',
             'game_type'        => '%s',
             'bracket_type'     => '%s',
-            'status'           => '%s',
             'race_to_winners'  => '%d',
             'race_to_losers'   => '%d',
             'num_tables'       => '%d',
             'entrance_fee'     => '%f',
+            'director_fee'     => '%f',
+            'money_added'      => '%f',
             'slug'             => '%s',
             'handicap_enabled' => '%d',
             'is_public'        => '%d',
@@ -299,11 +304,17 @@ class PTM_Tournament {
         $player_count = self::get_player_count( $tournament_id );
         $rules        = self::get_payout_rules( $tournament_id );
 
-        $total_pot = (float) $tournament['entrance_fee'] * $player_count;
+        $entrance_fee  = (float) $tournament['entrance_fee'];
+        $director_fee  = (float) ( $tournament['director_fee'] ?? 0 );
+        $money_added   = (float) ( $tournament['money_added'] ?? 0 );
+        $net_per_player = max( 0, $entrance_fee - $director_fee );
+        $total_pot      = $net_per_player * $player_count + $money_added;
 
         foreach ( $rules as &$rule ) {
-            $rule['amount']    = round( $total_pot * ( (float) $rule['pct'] / 100 ), 2 );
-            $rule['total_pot'] = $total_pot;
+            $rule['amount']      = round( $total_pot * ( (float) $rule['pct'] / 100 ), 2 );
+            $rule['total_pot']   = $total_pot;
+            $rule['money_added'] = $money_added;
+            $rule['director_fee_total'] = $director_fee * $player_count;
         }
         unset( $rule );
 
