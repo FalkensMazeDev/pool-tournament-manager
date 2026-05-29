@@ -84,7 +84,7 @@ $table_status = $tournament->status === 'active' ? PTM_Tables::get_table_status(
         <?php if ( in_array( $tournament->status, [ 'active', 'complete' ], true ) ) : ?>
         <?php if ( $tournament->status === 'complete' ) : ?>
         <a href="<?php echo esc_url( PTM_Tournament::get_url( (array) $tournament, 'results' ) ); ?>"
-           class="button" style="margin-left:6px;">
+           class="button" style="margin-left:6px;" target="_blank" rel="noopener">
             📋 <?php _e( 'View Results', 'ptm-tournaments' ); ?>
         </a>
         <button type="button" id="ptm-reopen-tournament"

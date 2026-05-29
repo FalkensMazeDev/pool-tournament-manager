@@ -53,11 +53,23 @@ foreach ( $payouts as $rule ) {
             <span class="ptm-pot-label"><?php _e( 'Prize Pot', 'ptm-tournaments' ); ?></span>
             <span class="ptm-pot-amount">$<?php echo number_format( $total_pot, 2 ); ?></span>
             <span class="ptm-pot-breakdown">
-                <?php printf(
+                <?php
+                $entrance_fee  = (float) ( $tournament->entrance_fee ?? 0 );
+                $director_fee  = (float) ( $tournament->director_fee ?? 0 );
+                $money_added   = (float) ( $tournament->money_added ?? 0 );
+                $breakdown = sprintf(
                     __( '%d players × $%s entry', 'ptm-tournaments' ),
                     $player_count,
-                    number_format( $fee, 2 )
-                ); ?>
+                    number_format( $entrance_fee, 2 )
+                );
+                if ( $director_fee > 0 ) {
+                    $breakdown .= sprintf( ' − $%s director fee', number_format( $director_fee, 2 ) );
+                }
+                if ( $money_added > 0 ) {
+                    $breakdown .= sprintf( ' + $%s added', number_format( $money_added, 2 ) );
+                }
+                echo esc_html( $breakdown );
+                ?>
             </span>
         </div>
         <?php endif; ?>
