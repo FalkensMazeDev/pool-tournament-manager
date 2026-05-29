@@ -754,6 +754,12 @@ class PTM_Admin {
             $subject = str_replace( array_keys( $replacements ), array_values( $replacements ), $tpl_subject );
             $body    = str_replace( array_keys( $replacements ), array_values( $replacements ), $tpl_body );
 
+            // If the saved template has no HTML block tags, convert newlines to <br> so
+            // plain-text templates still render correctly in email clients.
+            if ( ! preg_match( '/<(p|br|div|h[1-6]|ul|ol|li)\b/i', $body ) ) {
+                $body = nl2br( esc_html( $body ) );
+            }
+
             $full_body = '<!DOCTYPE html><html><body style="font-family:sans-serif;font-size:16px;color:#1e293b;max-width:600px;margin:0 auto;padding:24px;">'
                 . $body
                 . '</body></html>';

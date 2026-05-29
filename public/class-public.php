@@ -28,10 +28,10 @@ class PTM_Public {
         $results_slug    = preg_quote( PTM_Settings::get( 'results_sub_slug' ),      '#' );
         $table_slug      = preg_quote( PTM_Settings::get( 'table_base_slug' ), '#' );
 
-        // Table view URL
+        // Table view URL — includes random token to prevent guessing
         add_rewrite_rule(
-            '^' . $table_slug . '/([^/]+)/([0-9]+)/?$',
-            'index.php?ptm_table_slug=$matches[1]&ptm_table_number=$matches[2]',
+            '^' . $table_slug . '/([^/]+)/([0-9]+)/([a-zA-Z0-9]+)/?$',
+            'index.php?ptm_table_slug=$matches[1]&ptm_table_number=$matches[2]&ptm_table_token=$matches[3]',
             'top'
         );
 
@@ -64,6 +64,7 @@ class PTM_Public {
         $vars[] = 'ptm_page';             // sub-page (results, etc.)
         $vars[] = 'ptm_table_slug';
         $vars[] = 'ptm_table_number';
+        $vars[] = 'ptm_table_token';
         return $vars;
     }
 
@@ -261,6 +262,7 @@ class PTM_Public {
     public function handle_table_page() {
         $slug         = get_query_var( 'ptm_table_slug' );
         $table_number = absint( get_query_var( 'ptm_table_number' ) );
+        $token        = sanitize_text_field( get_query_var( 'ptm_table_token' ) );
 
         if ( ! $slug || ! $table_number ) return;
 
@@ -273,6 +275,14 @@ class PTM_Public {
 
         if ( ! $t_raw ) {
             wp_die( __( 'Tournament not found.', 'ptm-tournaments' ), '', [ 'response' => 404 ] );
+        }
+
+        // Validate the token — admins can bypass for convenience
+        if ( ! PTM_Roles::can_manage_tournaments() ) {
+            $expected = PTM_Tournament::get_table_token( (int) $t_raw['id'] );
+            if ( ! $token || ! hash_equals( $expected, $token ) ) {
+                wp_die( __( 'Invalid table link.', 'ptm-tournaments' ), '', [ 'response' => 403 ] );
+            }
         }
 
         $tournament    = (object) $t_raw;

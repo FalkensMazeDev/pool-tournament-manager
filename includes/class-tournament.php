@@ -372,6 +372,20 @@ class PTM_Tournament {
     }
 
     /**
+     * Returns (and lazily creates) the random token used in table-view URLs
+     * for a given tournament, making those URLs non-guessable.
+     */
+    public static function get_table_token( int $tournament_id ): string {
+        $key   = 'ptm_table_token_' . $tournament_id;
+        $token = get_option( $key, '' );
+        if ( ! $token ) {
+            $token = wp_generate_password( 10, false );
+            update_option( $key, $token, false );
+        }
+        return $token;
+    }
+
+    /**
      * Returns finish results for a completed tournament, ordered by position.
      * Each row: player_id, name, finish_position, matches_won, matches_lost, games_won, games_lost.
      */
