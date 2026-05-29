@@ -166,6 +166,72 @@ $base_url = home_url( '/' );
             </div>
         </div>
 
+        <!-- ── Tracking / Analytics Scripts ─────────────────────────── -->
+        <div class="postbox" style="max-width:800px; margin-top:20px;">
+            <div class="postbox-header">
+                <h2><?php _e( 'Tracking &amp; Analytics Scripts', 'ptm-tournaments' ); ?></h2>
+            </div>
+            <div class="inside">
+                <p class="description" style="margin-bottom:16px;">
+                    <?php _e( 'These script blocks are injected into all public-facing PTM pages (bracket, results, table view, and scorer). Use them for analytics tags, tracking pixels, or any custom <code>&lt;script&gt;</code> / <code>&lt;meta&gt;</code> snippets.', 'ptm-tournaments' ); ?>
+                </p>
+                <table class="form-table">
+                    <tr>
+                        <th><label for="head_scripts"><?php _e( '&lt;head&gt; Scripts', 'ptm-tournaments' ); ?></label></th>
+                        <td>
+                            <textarea id="head_scripts" name="head_scripts" rows="6"
+                                      class="large-text code"
+                                      placeholder="<!-- e.g. Google Analytics gtag snippet -->"><?php echo esc_textarea( $s['head_scripts'] ); ?></textarea>
+                            <p class="description"><?php _e( 'Injected just before <code>&lt;/head&gt;</code> on every public PTM page.', 'ptm-tournaments' ); ?></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="footer_scripts"><?php _e( 'Footer Scripts', 'ptm-tournaments' ); ?></label></th>
+                        <td>
+                            <textarea id="footer_scripts" name="footer_scripts" rows="6"
+                                      class="large-text code"
+                                      placeholder="<!-- e.g. chat widget, heatmap, etc. -->"><?php echo esc_textarea( $s['footer_scripts'] ); ?></textarea>
+                            <p class="description"><?php _e( 'Injected just before <code>&lt;/body&gt;</code> on every public PTM page.', 'ptm-tournaments' ); ?></p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- ── Match Notification Email ──────────────────────────────── -->
+        <div class="postbox" style="max-width:800px; margin-top:20px;">
+            <div class="postbox-header">
+                <h2><?php _e( 'Match Notification Email', 'ptm-tournaments' ); ?></h2>
+            </div>
+            <div class="inside">
+                <p class="description" style="margin-bottom:16px;">
+                    <?php _e( 'When you click "Notify Players" on a match card in the bracket view, an email is sent to each player who has an email address on file. The message tells them which table to report to and includes a link to the scorer page.', 'ptm-tournaments' ); ?>
+                </p>
+                <table class="form-table">
+                    <tr>
+                        <th><label for="notification_from_name"><?php _e( 'From Name', 'ptm-tournaments' ); ?></label></th>
+                        <td>
+                            <input type="text" id="notification_from_name" name="notification_from_name"
+                                   class="regular-text"
+                                   value="<?php echo esc_attr( $s['notification_from_name'] ); ?>"
+                                   placeholder="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>">
+                            <p class="description"><?php _e( 'Leave blank to use the site name.', 'ptm-tournaments' ); ?></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="notification_from_email"><?php _e( 'From Email Address', 'ptm-tournaments' ); ?></label></th>
+                        <td>
+                            <input type="email" id="notification_from_email" name="notification_from_email"
+                                   class="regular-text"
+                                   value="<?php echo esc_attr( $s['notification_from_email'] ); ?>"
+                                   placeholder="<?php echo esc_attr( get_bloginfo( 'admin_email' ) ); ?>">
+                            <p class="description"><?php _e( 'Leave blank to use the WordPress admin email.', 'ptm-tournaments' ); ?></p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
         <!-- ── Shortcode Reference ────────────────────────────────────── -->
         <div class="postbox" style="max-width:800px; margin-top:20px;">
             <div class="postbox-header">

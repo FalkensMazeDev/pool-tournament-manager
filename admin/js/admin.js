@@ -488,6 +488,25 @@
         link.click();
     });
 
+    // ── Notify Players (match email) ──────────────────────────────────
+    $(document).on('click', '.ptm-notify-players', function() {
+        const btn     = $(this);
+        const matchId = btn.data('match');
+        btn.prop('disabled', true).text('Sending...');
+        $.ajax({
+            url: PTM.adminUrl, method: 'POST',
+            data: { action: 'ptm_send_match_email', nonce: PTM.nonce, match_id: matchId },
+            success: function(res) {
+                btn.prop('disabled', false).text('📧 Notify');
+                alert(res.success ? (res.data.message || 'Sent!') : ('Error: ' + (res.data.message || 'Unknown error')));
+            },
+            error: function() {
+                btn.prop('disabled', false).text('📧 Notify');
+                alert('Network error. Please try again.');
+            }
+        });
+    });
+
     // ── Reopen Tournament ─────────────────────────────────────────────────────
     $(document).on('click', '#ptm-reopen-tournament', function() {
         const btn = $(this);

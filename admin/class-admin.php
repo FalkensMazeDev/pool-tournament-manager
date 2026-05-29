@@ -20,6 +20,7 @@ class PTM_Admin {
         add_action( 'wp_ajax_ptm_correct_score',         [ $this, 'ajax_correct_score' ] );
         add_action( 'wp_ajax_ptm_finalize_results',      [ $this, 'ajax_finalize_results' ] );
         add_action( 'wp_ajax_ptm_reopen_tournament',     [ $this, 'ajax_reopen_tournament' ] );
+        add_action( 'wp_ajax_ptm_send_match_email',      [ $this, 'ajax_send_match_email' ] );
         add_filter( 'admin_footer_text',                 [ $this, 'admin_footer_text' ] );
     }
 
@@ -653,6 +654,104 @@ class PTM_Admin {
         PTM_Tournament::set_status( $tournament_id, 'active' );
 
         wp_send_json_success( [ 'message' => 'Tournament reopened successfully.' ] );
+    }
+
+    public function ajax_send_match_email() {
+        check_ajax_referer( 'ptm_admin', 'nonce' );
+
+        if ( ! PTM_Roles::can_manage_tournaments() ) {
+            wp_send_json_error( [ 'message' => 'Permission denied.' ] );
+            return;
+        }
+
+        $match_id = absint( $_POST['match_id'] ?? 0 );
+        if ( ! $match_id ) {
+            wp_send_json_error( [ 'message' => 'Invalid match ID.' ] );
+            return;
+        }
+
+        $match = PTM_Match::get( $match_id );
+        if ( ! $match ) {
+            wp_send_json_error( [ 'message' => 'Match not found.' ] );
+            return;
+        }
+
+        $table_num  = (int) ( $match['table_number'] ?? 0 );
+        $scorer_url = $match['score_token']
+            ? home_url( '/' . PTM_Settings::get( 'scorer_base_slug' ) . '/' . $match['score_token'] . '/' )
+            : '';
+
+        $from_name  = PTM_Settings::get( 'notification_from_name' )  ?: get_bloginfo( 'name' );
+        $from_email = PTM_Settings::get( 'notification_from_email' ) ?: get_bloginfo( 'admin_email' );
+        $headers    = [
+            'Content-Type: text/html; charset=UTF-8',
+            'From: ' . $from_name . ' <' . $from_email . '>',
+        ];
+
+        $sent_to  = [];
+        $skipped  = [];
+        $players  = [];
+
+        foreach ( [ 1, 2 ] as $slot ) {
+            $pid   = (int) ( $match[ 'player' . $slot . '_id' ] ?? 0 );
+            $pname = $match[ 'player' . $slot . '_name' ] ?? '';
+            if ( ! $pid ) continue;
+            $player = PTM_Player::get( $pid );
+            $email  = $player['email'] ?? '';
+            $players[] = [ 'name' => $pname, 'email' => $email ];
+            if ( ! $email ) {
+                $skipped[] = $pname;
+            }
+        }
+
+        $p1_name = $players[0]['name'] ?? 'Player 1';
+        $p2_name = $players[1]['name'] ?? 'Player 2';
+        $subject = $table_num
+            ? sprintf( 'Your match is ready — Table %d', $table_num )
+            : 'Your match is ready';
+
+        foreach ( $players as $p ) {
+            if ( ! $p['email'] ) continue;
+
+            $table_line = $table_num
+                ? '<p>Please report to <strong>Table ' . $table_num . '</strong>.</p>'
+                : '';
+
+            $scorer_line = $scorer_url
+                ? '<p>One player should keep score using this link:<br><a href="' . esc_url( $scorer_url ) . '">' . esc_html( $scorer_url ) . '</a></p>'
+                : '';
+
+            $body = '
+<html><body style="font-family:sans-serif;font-size:16px;color:#1e293b;">
+<p>Hi ' . esc_html( $p['name'] ) . ',</p>
+<p>Your match is up: <strong>' . esc_html( $p1_name ) . '</strong> vs <strong>' . esc_html( $p2_name ) . '</strong>.</p>
+' . $table_line . $scorer_line . '
+<p>Good luck!</p>
+<p style="color:#64748b;font-size:13px;">' . esc_html( $from_name ) . '</p>
+</body></html>';
+
+            $result = wp_mail( $p['email'], $subject, $body, $headers );
+            if ( $result ) {
+                $sent_to[] = $p['name'];
+            } else {
+                $skipped[] = $p['name'] . ' (send failed)';
+            }
+        }
+
+        if ( empty( $sent_to ) && empty( $skipped ) ) {
+            wp_send_json_error( [ 'message' => 'No players found for this match.' ] );
+            return;
+        }
+
+        $msg = '';
+        if ( $sent_to ) {
+            $msg .= 'Email sent to: ' . implode( ', ', $sent_to ) . '. ';
+        }
+        if ( $skipped ) {
+            $msg .= 'Skipped (no email on file or send failed): ' . implode( ', ', $skipped ) . '.';
+        }
+
+        wp_send_json_success( [ 'message' => trim( $msg ) ] );
     }
 
     public function admin_footer_text( string $text ): string {

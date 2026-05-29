@@ -23,6 +23,10 @@ class PTM_Settings {
         'default_entrance_fee'  => '0.00',          // Default entrance fee
         'show_prize_pot_public' => 1,               // Show prize pot on public pages
         'club_name'             => '',              // Shown in page titles / headers
+        'head_scripts'          => '',              // Raw HTML injected before </head> on public pages
+        'footer_scripts'        => '',              // Raw HTML injected before </body> on public pages
+        'notification_from_name'  => '',            // From name for match notification emails
+        'notification_from_email' => '',            // From address for match notification emails
     ];
 
     /**
@@ -57,6 +61,10 @@ class PTM_Settings {
             'default_entrance_fee'   => max( 0, (float) ( $post['default_entrance_fee'] ?? 0 ) ),
             'show_prize_pot_public'  => ! empty( $post['show_prize_pot_public'] ) ? 1 : 0,
             'club_name'              => sanitize_text_field( $post['club_name'] ?? '' ),
+            'head_scripts'           => wp_kses_post( $post['head_scripts'] ?? '' ),
+            'footer_scripts'         => wp_kses_post( $post['footer_scripts'] ?? '' ),
+            'notification_from_name'  => sanitize_text_field( $post['notification_from_name'] ?? '' ),
+            'notification_from_email' => sanitize_email( $post['notification_from_email'] ?? '' ),
         ];
         update_option( self::OPTION_KEY, $clean );
         // Rewrite rules must be flushed when slugs change
