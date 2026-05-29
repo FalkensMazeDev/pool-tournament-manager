@@ -24,7 +24,7 @@ class PTM_Tournament {
         if ( $where ) {
             $sql .= ' WHERE ' . implode( ' AND ', $where );
         }
-        $sql .= ' ORDER BY tournament_date DESC, created_at DESC';
+        $sql .= ' ORDER BY ISNULL(tournament_date) ASC, tournament_date DESC, created_at DESC';
 
         return $values
             ? $wpdb->get_results( $wpdb->prepare( $sql, ...$values ), ARRAY_A )

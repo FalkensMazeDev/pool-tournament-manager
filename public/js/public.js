@@ -2,8 +2,9 @@
 (function() {
     'use strict';
 
-    var lastUpdated  = {};
-    var pollTimers   = {};
+    var lastUpdated    = {};
+    var pollTimers     = {};
+    var autoTimers     = {};
 
     // ----------------------------------------------------------------
     // Spectator bracket polling
@@ -138,6 +139,99 @@
     }
 
     // ----------------------------------------------------------------
+    // Table status display
+    // ----------------------------------------------------------------
+    function fetchTableStatus(tournamentId) {
+        fetch(PTM.restUrl + 'tournament/' + tournamentId + '/tables')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                renderTableStatus(tournamentId, data.tables || [], data.waiting || 0);
+            })
+            .catch(function() {});
+    }
+
+    function renderTableStatus(tournamentId, tables, waiting) {
+        var grid = document.getElementById('ptm-pub-tables-grid-' + tournamentId);
+        if (!grid) return;
+
+        grid.innerHTML = '';
+
+        tables.forEach(function(t) {
+            var card = document.createElement('div');
+            card.className = 'ptm-pub-table-card' + (t.match ? ' ptm-pub-table-busy' : ' ptm-pub-table-free');
+
+            var numEl = document.createElement('div');
+            numEl.className = 'ptm-pub-table-num';
+            numEl.textContent = 'Table ' + t.table;
+            card.appendChild(numEl);
+
+            if (t.match) {
+                var players = document.createElement('div');
+                players.className = 'ptm-pub-table-players';
+                players.innerHTML = '<span>' + escHtmlPublic(t.match.player1_name) + '</span>' +
+                                    '<em>vs</em>' +
+                                    '<span>' + escHtmlPublic(t.match.player2_name) + '</span>';
+                card.appendChild(players);
+
+                var score = document.createElement('div');
+                score.className = 'ptm-pub-table-score';
+                score.textContent = t.match.player1_score + ' – ' + t.match.player2_score;
+                card.appendChild(score);
+
+                if (t.match.status === 'in_progress') {
+                    var live = document.createElement('div');
+                    live.className = 'ptm-pub-table-live';
+                    live.textContent = '● LIVE';
+                    card.appendChild(live);
+                }
+            } else {
+                var freeEl = document.createElement('div');
+                freeEl.className = 'ptm-pub-table-free-label';
+                freeEl.textContent = 'Free';
+                card.appendChild(freeEl);
+            }
+
+            grid.appendChild(card);
+        });
+
+        if (waiting > 0) {
+            var waitEl = document.createElement('div');
+            waitEl.className = 'ptm-pub-table-waiting';
+            waitEl.textContent = waiting + ' match' + (waiting === 1 ? '' : 'es') + ' waiting for a table';
+            grid.appendChild(waitEl);
+        }
+    }
+
+    function escHtmlPublic(str) {
+        return String(str || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    // ----------------------------------------------------------------
+    // Auto-update checkbox (30s interval)
+    // ----------------------------------------------------------------
+    document.addEventListener('change', function(e) {
+        if (!e.target.classList.contains('ptm-autoupdate-toggle')) return;
+        var tid = e.target.dataset.tournament;
+        if (!tid) return;
+
+        if (e.target.checked) {
+            fetchTableStatus(tid);
+            refreshBracket(tid);
+            autoTimers[tid] = setInterval(function() {
+                fetchTableStatus(tid);
+                refreshBracket(tid);
+            }, 30000);
+        } else {
+            clearInterval(autoTimers[tid]);
+            delete autoTimers[tid];
+        }
+    });
+
+    // ----------------------------------------------------------------
     // Tabs (public bracket)
     // ----------------------------------------------------------------
     document.addEventListener('click', function(e) {
@@ -166,12 +260,11 @@
         document.querySelectorAll('.ptm-bracket-public').forEach(function(el) {
             var tid = el.dataset.tournament;
             if (tid) {
-                // Only poll for active tournaments
                 var liveBadge = el.querySelector('.ptm-live-badge');
                 if (liveBadge) {
                     initPolling(tid);
+                    fetchTableStatus(tid);
                 } else {
-                    // Still fetch once to populate last-updated timestamp
                     checkForUpdates(tid);
                 }
             }

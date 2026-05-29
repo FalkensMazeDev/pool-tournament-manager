@@ -467,7 +467,7 @@ class PTM_Admin {
         $exclude = [];
         if ( $tournament_id ) {
             $roster  = PTM_Player::get_tournament_roster( $tournament_id );
-            $exclude = array_column( $roster, 'player_id' );
+            $exclude = array_map( 'intval', array_column( $roster, 'player_id' ) );
         }
 
         $results = [];
