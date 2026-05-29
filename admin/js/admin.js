@@ -280,6 +280,71 @@
         return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
+    // ── Copy URL ──────────────────────────────────────────────────────────────
+    $(document).on('click', '#ptm-copy-url', function() {
+        const url = $(this).data('url');
+        if (!url) return;
+        navigator.clipboard.writeText(url).then(() => {
+            const btn = $(this);
+            const orig = btn.text();
+            btn.text('✓ Copied!');
+            setTimeout(() => btn.text(orig), 2000);
+        }).catch(() => {
+            // fallback for older browsers
+            const ta = document.createElement('textarea');
+            ta.value = url;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            const btn = $(this);
+            const orig = btn.text();
+            btn.text('✓ Copied!');
+            setTimeout(() => btn.text(orig), 2000);
+        });
+    });
+
+    // ── QR Code modal ─────────────────────────────────────────────────────────
+    var _qrInstance = null;
+
+    $(document).on('click', '#ptm-show-qr', function() {
+        const url = $(this).data('url');
+        if (!url) return;
+
+        $('#ptm-qr-url-display').text(url);
+        $('#ptm-qr-canvas').empty();
+        _qrInstance = new QRCode(document.getElementById('ptm-qr-canvas'), {
+            text: url,
+            width: 256,
+            height: 256,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.M
+        });
+
+        $('#ptm-qr-modal').fadeIn(150);
+        $('#ptm-qr-modal .ptm-qr-modal-close').trigger('focus');
+    });
+
+    $(document).on('click', '.ptm-qr-modal-close, .ptm-qr-modal-overlay', function() {
+        $('#ptm-qr-modal').fadeOut(150);
+    });
+
+    $(document).on('keydown', function(e) {
+        if (e.key === 'Escape') $('#ptm-qr-modal').fadeOut(150);
+    });
+
+    $(document).on('click', '#ptm-qr-download', function() {
+        const canvas = document.querySelector('#ptm-qr-canvas canvas');
+        if (!canvas) return;
+        const link = document.createElement('a');
+        link.download = 'tournament-qr.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    });
+
     // ── Finalize Results ──────────────────────────────────────────────────────
     $(document).on('click', '#ptm-finalize-results', function() {
         const btn = $(this);

@@ -105,9 +105,17 @@ class PTM_Admin {
         );
 
         wp_enqueue_script(
+            'ptm-qrcode',
+            PTM_PLUGIN_URL . 'admin/js/qrcode.min.js',
+            [],
+            PTM_VERSION,
+            true
+        );
+
+        wp_enqueue_script(
             'ptm-admin',
             PTM_PLUGIN_URL . 'admin/js/admin.js',
-            [ 'jquery', 'jquery-ui-sortable' ],
+            [ 'jquery', 'jquery-ui-sortable', 'ptm-qrcode' ],
             PTM_VERSION,
             true
         );

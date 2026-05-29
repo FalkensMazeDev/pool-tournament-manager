@@ -104,6 +104,23 @@ $tid    = $tournament ? $tournament->id : 0;
                                            value="<?php echo $tournament ? esc_attr( $tournament->slug ) : ''; ?>"
                                            placeholder="<?php _e( 'auto-generated from name', 'ptm-tournaments' ); ?>">
                                     <p class="description"><?php _e( 'Leave blank to auto-generate. Only lowercase letters, numbers, hyphens.', 'ptm-tournaments' ); ?></p>
+                                    <?php if ( $tournament && $tournament->slug ) :
+                                        $permalink = PTM_Tournament::get_url( (array) $tournament );
+                                    ?>
+                                    <div class="ptm-permalink-row" id="ptm-permalink-row">
+                                        <a href="<?php echo esc_url( $permalink ); ?>" target="_blank" class="ptm-permalink-url" id="ptm-permalink-url">
+                                            <?php echo esc_html( $permalink ); ?>
+                                        </a>
+                                        <button type="button" class="button button-small" id="ptm-copy-url"
+                                                data-url="<?php echo esc_attr( $permalink ); ?>">
+                                            📋 <?php _e( 'Copy URL', 'ptm-tournaments' ); ?>
+                                        </button>
+                                        <button type="button" class="button button-small" id="ptm-show-qr"
+                                                data-url="<?php echo esc_attr( $permalink ); ?>">
+                                            ▣ <?php _e( 'QR Code', 'ptm-tournaments' ); ?>
+                                        </button>
+                                    </div>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                             <tr>
@@ -259,4 +276,20 @@ $tid    = $tournament ? $tournament->id : 0;
     </div>
     <?php endif; ?>
 
+</div>
+
+<!-- QR Code modal -->
+<div id="ptm-qr-modal" class="ptm-qr-modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="ptm-qr-modal-title">
+    <div class="ptm-qr-modal-overlay"></div>
+    <div class="ptm-qr-modal-box">
+        <div class="ptm-qr-modal-header">
+            <h3 id="ptm-qr-modal-title"><?php _e( 'Bracket QR Code', 'ptm-tournaments' ); ?></h3>
+            <button type="button" class="ptm-qr-modal-close" aria-label="<?php _e( 'Close', 'ptm-tournaments' ); ?>">&times;</button>
+        </div>
+        <div class="ptm-qr-modal-body">
+            <div id="ptm-qr-canvas"></div>
+            <p class="ptm-qr-url" id="ptm-qr-url-display"></p>
+            <button type="button" class="button" id="ptm-qr-download"><?php _e( 'Download PNG', 'ptm-tournaments' ); ?></button>
+        </div>
+    </div>
 </div>
