@@ -31,13 +31,24 @@
 }
 
 .ptm-players-layout {
-    display: grid;
-    grid-template-columns: 1fr 280px;
+    display: flex;
+    flex-direction: column;
     gap: 20px;
     margin-top: 20px;
+    max-width: 960px;
 }
-@media (max-width: 960px) {
-    .ptm-players-layout { grid-template-columns: 1fr; }
+.ptm-player-form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0 24px;
+}
+.ptm-player-form-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+}
+@media (max-width: 782px) {
+    .ptm-player-form-grid { grid-template-columns: 1fr; }
 }
 
 /* ----------------------------------------------------------------

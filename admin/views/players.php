@@ -16,6 +16,72 @@ $all_meta = PTM_Player::get_all_meta();
 
     <div class="ptm-players-layout">
 
+        <!-- Add / Edit Player Form -->
+        <div class="ptm-players-form-box postbox">
+            <div class="postbox-header">
+                <h2 id="ptm-player-form-title"><?php _e( 'Add Player', 'ptm-tournaments' ); ?></h2>
+            </div>
+            <div class="inside">
+                <form method="post" action="<?php echo admin_url( 'admin-post.php' ); ?>" id="ptm-player-form">
+                    <?php wp_nonce_field( 'ptm_save_player' ); ?>
+                    <input type="hidden" name="action"    value="ptm_save_player">
+                    <input type="hidden" name="player_id" id="edit-player-id" value="">
+
+                    <div class="ptm-player-form-grid">
+                        <div class="ptm-player-form-col">
+                            <p>
+                                <label for="player-name"><?php _e( 'Name', 'ptm-tournaments' ); ?> <span class="required">*</span></label>
+                                <input type="text" id="player-name" name="name" class="regular-text" required>
+                            </p>
+                            <p>
+                                <label for="player-email"><?php _e( 'Email', 'ptm-tournaments' ); ?></label>
+                                <input type="email" id="player-email" name="email" class="regular-text">
+                            </p>
+                            <p>
+                                <label for="player-phone"><?php _e( 'Phone', 'ptm-tournaments' ); ?></label>
+                                <input type="tel" id="player-phone" name="phone" class="regular-text">
+                            </p>
+                        </div>
+                        <div class="ptm-player-form-col">
+                            <p style="font-weight:600;margin-bottom:4px"><?php _e( 'League / Rating Info', 'ptm-tournaments' ); ?></p>
+                            <p>
+                                <label for="player-apa-number"><?php _e( 'APA Number', 'ptm-tournaments' ); ?></label>
+                                <input type="text" id="player-apa-number" name="apa_number" class="regular-text">
+                            </p>
+                            <p>
+                                <label for="player-apa-sl"><?php _e( 'APA Skill Level', 'ptm-tournaments' ); ?></label>
+                                <input type="number" id="player-apa-sl" name="apa_skill_level" class="small-text" min="1" max="9">
+                            </p>
+                            <p>
+                                <label for="player-fargo-id"><?php _e( 'Fargo ID', 'ptm-tournaments' ); ?></label>
+                                <input type="text" id="player-fargo-id" name="fargo_id" class="regular-text">
+                            </p>
+                            <p>
+                                <label for="player-fargo-rating"><?php _e( 'Fargo Rating', 'ptm-tournaments' ); ?></label>
+                                <input type="number" id="player-fargo-rating" name="fargo_rating" class="small-text" min="0" max="1000">
+                            </p>
+                        </div>
+                        <div class="ptm-player-form-col">
+                            <p style="font-weight:600;margin-bottom:4px"><?php _e( 'Custom Fields', 'ptm-tournaments' ); ?></p>
+                            <div id="ptm-meta-fields"></div>
+                            <button type="button" class="button" id="ptm-add-meta-field" style="margin-bottom:10px">
+                                <?php _e( '+ Add Field', 'ptm-tournaments' ); ?>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="ptm-player-form-actions">
+                        <button type="submit" class="button button-primary" id="ptm-player-submit">
+                            <?php _e( 'Add Player', 'ptm-tournaments' ); ?>
+                        </button>
+                        <button type="button" class="button" style="display:none" id="ptm-player-cancel">
+                            <?php _e( 'Cancel Edit', 'ptm-tournaments' ); ?>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- Player list -->
         <div class="ptm-players-main">
             <?php if ( empty( $players ) ) : ?>
@@ -77,71 +143,6 @@ $all_meta = PTM_Player::get_all_meta();
                 </tbody>
             </table>
             <?php endif; ?>
-        </div>
-
-        <!-- Add / Edit Player Sidebar -->
-        <div class="ptm-players-sidebar">
-            <div class="postbox">
-                <div class="postbox-header">
-                    <h2 id="ptm-player-form-title"><?php _e( 'Add Player', 'ptm-tournaments' ); ?></h2>
-                </div>
-                <div class="inside">
-                    <form method="post" action="<?php echo admin_url( 'admin-post.php' ); ?>" id="ptm-player-form">
-                        <?php wp_nonce_field( 'ptm_save_player' ); ?>
-                        <input type="hidden" name="action"    value="ptm_save_player">
-                        <input type="hidden" name="player_id" id="edit-player-id" value="">
-
-                        <p>
-                            <label for="player-name"><?php _e( 'Name', 'ptm-tournaments' ); ?> <span class="required">*</span></label>
-                            <input type="text" id="player-name" name="name" class="regular-text" required>
-                        </p>
-                        <p>
-                            <label for="player-email"><?php _e( 'Email', 'ptm-tournaments' ); ?></label>
-                            <input type="email" id="player-email" name="email" class="regular-text">
-                        </p>
-                        <p>
-                            <label for="player-phone"><?php _e( 'Phone', 'ptm-tournaments' ); ?></label>
-                            <input type="tel" id="player-phone" name="phone" class="regular-text">
-                        </p>
-
-                        <hr style="margin:12px 0">
-                        <p style="font-weight:600;margin-bottom:4px"><?php _e( 'League / Rating Info', 'ptm-tournaments' ); ?></p>
-
-                        <p>
-                            <label for="player-apa-number"><?php _e( 'APA Number', 'ptm-tournaments' ); ?></label>
-                            <input type="text" id="player-apa-number" name="apa_number" class="regular-text">
-                        </p>
-                        <p>
-                            <label for="player-apa-sl"><?php _e( 'APA Skill Level', 'ptm-tournaments' ); ?></label>
-                            <input type="number" id="player-apa-sl" name="apa_skill_level" class="small-text" min="1" max="9">
-                        </p>
-                        <p>
-                            <label for="player-fargo-id"><?php _e( 'Fargo ID', 'ptm-tournaments' ); ?></label>
-                            <input type="text" id="player-fargo-id" name="fargo_id" class="regular-text">
-                        </p>
-                        <p>
-                            <label for="player-fargo-rating"><?php _e( 'Fargo Rating', 'ptm-tournaments' ); ?></label>
-                            <input type="number" id="player-fargo-rating" name="fargo_rating" class="small-text" min="0" max="1000">
-                        </p>
-
-                        <hr style="margin:12px 0">
-                        <p style="font-weight:600;margin-bottom:4px"><?php _e( 'Custom Fields', 'ptm-tournaments' ); ?></p>
-                        <div id="ptm-meta-fields">
-                            <!-- Rows injected by JS when editing -->
-                        </div>
-                        <button type="button" class="button" id="ptm-add-meta-field" style="margin-bottom:10px">
-                            <?php _e( '+ Add Field', 'ptm-tournaments' ); ?>
-                        </button>
-
-                        <button type="submit" class="button button-primary" style="width:100%;" id="ptm-player-submit">
-                            <?php _e( 'Add Player', 'ptm-tournaments' ); ?>
-                        </button>
-                        <button type="button" class="button" style="width:100%;margin-top:5px;display:none" id="ptm-player-cancel">
-                            <?php _e( 'Cancel Edit', 'ptm-tournaments' ); ?>
-                        </button>
-                    </form>
-                </div>
-            </div>
         </div>
 
     </div><!-- .ptm-players-layout -->
