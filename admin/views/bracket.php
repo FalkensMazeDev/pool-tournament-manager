@@ -79,10 +79,6 @@ $table_status = $tournament->status === 'active' ? PTM_Tables::get_table_status(
         </a>
         <?php endif; ?>
         <?php if ( in_array( $tournament->status, [ 'active', 'complete' ], true ) ) : ?>
-        <button type="button" id="ptm-finalize-results" class="button button-secondary" style="margin-left:10px;"
-                data-tournament="<?php echo $tournament_id; ?>">
-            🏆 <?php _e( 'Finalize Results', 'ptm-tournaments' ); ?>
-        </button>
         <?php if ( $tournament->status === 'complete' ) : ?>
         <a href="<?php echo esc_url( PTM_Tournament::get_url( (array) $tournament, 'results' ) ); ?>"
            class="button" style="margin-left:6px;">

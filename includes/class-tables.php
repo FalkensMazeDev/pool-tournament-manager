@@ -167,7 +167,7 @@ class PTM_Tables {
         // Return all tables, even empty ones
         $status = [];
         for ( $t = 1; $t <= $num_tables; $t++ ) {
-            $status[ $t ] = isset( $by_table[ $t ] ) ? (object) $by_table[ $t ] : null;
+            $status[ $t ] = isset( $by_table[ $t ] ) ? $by_table[ $t ] : null;
         }
 
         return $status;
