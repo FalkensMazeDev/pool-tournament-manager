@@ -460,17 +460,26 @@ class PTM_Admin {
     public function ajax_player_search() {
         check_ajax_referer( 'ptm_admin', 'nonce' );
 
-        $search  = sanitize_text_field( $_GET['q'] ?? '' );
-        $players = PTM_Player::get_all( [ 'search' => $search, 'limit' => 20 ] );
+        $search        = sanitize_text_field( $_GET['q'] ?? '' );
+        $tournament_id = absint( $_GET['tournament_id'] ?? 0 );
+        $players       = PTM_Player::get_all( [ 'search' => $search, 'limit' => 20 ] );
 
-        $results = array_map( function( $p ) {
+        $exclude = [];
+        if ( $tournament_id ) {
+            $roster  = PTM_Player::get_tournament_roster( $tournament_id );
+            $exclude = array_column( $roster, 'player_id' );
+        }
+
+        $results = [];
+        foreach ( $players as $p ) {
+            if ( in_array( (int) $p['id'], $exclude, true ) ) continue;
             $label   = $p['name'];
             $details = array_filter( [ $p['email'] ?? '', $p['phone'] ?? '' ] );
             if ( $details ) {
                 $label .= ' (' . implode( ', ', $details ) . ')';
             }
-            return [ 'id' => (int) $p['id'], 'text' => $label, 'name' => $p['name'] ];
-        }, $players );
+            $results[] = [ 'id' => (int) $p['id'], 'text' => $label, 'name' => $p['name'] ];
+        }
 
         wp_send_json_success( $results );
     }
