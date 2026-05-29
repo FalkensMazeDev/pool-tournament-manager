@@ -4,7 +4,7 @@ defined( 'ABSPATH' ) || exit;
 class PTM_Install {
 
     const DB_VERSION_OPTION = 'ptm_db_version';
-    const DB_VERSION        = '1.3.0';
+    const DB_VERSION        = '1.4.0';
 
     public static function activate() {
         self::create_tables();
@@ -124,13 +124,28 @@ class PTM_Install {
 
         // Permanent player registry
         dbDelta( "CREATE TABLE {$wpdb->prefix}ptm_players (
-            id         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-            name       VARCHAR(100)    NOT NULL,
-            email      VARCHAR(150)             DEFAULT NULL,
-            phone      VARCHAR(30)              DEFAULT NULL,
-            created_at DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            id              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            name            VARCHAR(100)    NOT NULL,
+            email           VARCHAR(150)             DEFAULT NULL,
+            phone           VARCHAR(30)              DEFAULT NULL,
+            apa_number      VARCHAR(30)              DEFAULT NULL,
+            apa_skill_level TINYINT UNSIGNED         DEFAULT NULL,
+            fargo_id        VARCHAR(30)              DEFAULT NULL,
+            fargo_rating    SMALLINT UNSIGNED        DEFAULT NULL,
+            created_at      DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
             KEY name (name)
+        ) $charset;" );
+
+        // Player custom meta — arbitrary key-value pairs per player
+        dbDelta( "CREATE TABLE {$wpdb->prefix}ptm_player_meta (
+            id         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            player_id  BIGINT UNSIGNED NOT NULL,
+            meta_key   VARCHAR(100)    NOT NULL,
+            meta_value TEXT                     DEFAULT NULL,
+            PRIMARY KEY (id),
+            UNIQUE KEY player_meta_key (player_id, meta_key),
+            KEY player_id (player_id)
         ) $charset;" );
 
         // Career stats — one row per player per tournament

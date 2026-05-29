@@ -206,14 +206,38 @@
         const btn = $(this);
         $('#edit-player-id').val(btn.data('id')); $('#player-name').val(btn.data('name'));
         $('#player-email').val(btn.data('email')); $('#player-phone').val(btn.data('phone'));
+        $('#player-apa-number').val(btn.data('apa-number') || '');
+        $('#player-apa-sl').val(btn.data('apa-sl') || '');
+        $('#player-fargo-id').val(btn.data('fargo-id') || '');
+        $('#player-fargo-rating').val(btn.data('fargo-rating') || '');
+        // Load custom meta
+        $('#ptm-meta-fields').empty();
+        const meta = btn.data('meta') || {};
+        Object.entries(meta).forEach(([k, v]) => addMetaRow(k, v));
         $('#ptm-player-form-title').text('Edit Player'); $('#ptm-player-submit').text('Update Player');
         $('#ptm-player-cancel').show();
         $('html, body').animate({ scrollTop: $('#ptm-player-form').offset().top - 50 }, 300);
     });
     $('#ptm-player-cancel').on('click', function() {
         $('#edit-player-id').val(''); $('#player-name, #player-email, #player-phone').val('');
+        $('#player-apa-number, #player-apa-sl, #player-fargo-id, #player-fargo-rating').val('');
+        $('#ptm-meta-fields').empty();
         $('#ptm-player-form-title').text('Add Player'); $('#ptm-player-submit').text('Add Player'); $(this).hide();
     });
+
+    // ── Custom meta field helpers
+    function addMetaRow(key, value) {
+        key = key || '';
+        value = value || '';
+        const row = $('<div class="ptm-meta-row" style="display:flex;gap:4px;margin-bottom:6px">' +
+            '<input type="text" name="meta_keys[]" placeholder="Field Name" class="regular-text" style="flex:1" value="' + escHtml(key) + '">' +
+            '<input type="text" name="meta_values[]" placeholder="Value" class="regular-text" style="flex:1" value="' + escHtml(value) + '">' +
+            '<button type="button" class="button ptm-remove-meta" title="Remove">✕</button>' +
+            '</div>');
+        $('#ptm-meta-fields').append(row);
+    }
+    $('#ptm-add-meta-field').on('click', function() { addMetaRow('', ''); });
+    $(document).on('click', '.ptm-remove-meta', function() { $(this).closest('.ptm-meta-row').remove(); });
 
     // ── Player autocomplete
     let searchTimer;
@@ -228,7 +252,12 @@
                     if (!res.success) return;
                     const $box = $('#ptm-player-suggestions').empty();
                     if (!res.data.length) { $box.append('<div class="ptm-suggestion-item ptm-suggestion-empty">No players found</div>'); }
-                    else { res.data.forEach(p => $box.append($('<div class="ptm-suggestion-item"></div>').text(p.text).data('id', p.id))); }
+                    else {
+                        res.data.forEach(p => {
+                            const $item = $('<div class="ptm-suggestion-item"></div>').html(escHtml(p.text)).data('id', p.id).data('name', p.name || p.text);
+                            $box.append($item);
+                        });
+                    }
                     $box.show();
                 }
             });
@@ -237,7 +266,8 @@
     $(document).on('click', '.ptm-suggestion-item', function() {
         const id = $(this).data('id');
         if (id) { $('#selected-player-id').val(id); $('#new-player-name').val('').prop('disabled', true); }
-        $('#ptm-player-search').val($(this).text()); $('#ptm-player-suggestions').hide().empty();
+        $('#ptm-player-search').val($(this).data('name') || $(this).text());
+        $('#ptm-player-suggestions').hide().empty();
     });
     $('#ptm-player-search').on('change', function() {
         if (!$(this).val()) { $('#selected-player-id').val(''); $('#new-player-name').prop('disabled', false); }
