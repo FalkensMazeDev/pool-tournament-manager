@@ -392,6 +392,7 @@ class PTM_Admin {
                     $meta[ $k ] = $meta_values[ $i ] ?? '';
                 }
             }
+            unset( $meta['do_not_notify'] );
             if ( ! empty( $_POST['do_not_notify'] ) ) {
                 $meta['do_not_notify'] = '1';
             }
@@ -697,17 +698,18 @@ class PTM_Admin {
         $tpl_subject = PTM_Settings::get( 'notification_subject' ) ?: 'Your match is ready — Table {table}';
         $tpl_body    = PTM_Settings::get( 'notification_body' ) ?: '<p>Hi {player_name},</p><p>Your match is ready at <strong>Table {table}</strong> in <strong>{tournament}</strong>.</p><p>You are playing against <strong>{opponent}</strong>.</p><p>Use the scorer link to enter scores: {scorer_link}</p>';
 
-        // Collect both players
+        // Collect both players — PTM_Match::get() does no JOIN so we fetch
+        // each player record directly to get name, email and meta.
         $players = [];
         foreach ( [ 1, 2 ] as $slot ) {
-            $pid   = (int) ( $match[ 'player' . $slot . '_id' ] ?? 0 );
-            $pname = $match[ 'player' . $slot . '_name' ] ?? '';
+            $pid = (int) ( $match[ 'player' . $slot . '_id' ] ?? 0 );
             if ( ! $pid ) continue;
-            $player      = PTM_Player::get( $pid );
+            $player = PTM_Player::get( $pid );
+            if ( ! $player ) continue;
             $player_meta = PTM_Player::get_meta( $pid );
             $players[] = [
                 'slot'          => $slot,
-                'name'          => $pname,
+                'name'          => $player['name'],
                 'email'         => $player['email'] ?? '',
                 'do_not_notify' => ! empty( $player_meta['do_not_notify'] ),
             ];
@@ -754,9 +756,9 @@ class PTM_Admin {
             $subject = str_replace( array_keys( $replacements ), array_values( $replacements ), $tpl_subject );
             $body    = str_replace( array_keys( $replacements ), array_values( $replacements ), $tpl_body );
 
-            // If the saved template has no HTML block tags, convert newlines to <br> so
-            // plain-text templates still render correctly in email clients.
-            if ( ! preg_match( '/<(p|br|div|h[1-6]|ul|ol|li)\b/i', $body ) ) {
+            // If the body contains no HTML tags at all, treat it as plain text:
+            // escape it and convert newlines to <br> so it renders correctly.
+            if ( ! preg_match( '/<[a-z]/i', $body ) ) {
                 $body = nl2br( esc_html( $body ) );
             }
 

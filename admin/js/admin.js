@@ -390,7 +390,7 @@
         $('#player-do-not-notify').prop('checked', btn.data('do-not-notify') == '1');
         $('#ptm-meta-fields').empty();
         const meta = btn.data('meta') || {};
-        Object.entries(meta).forEach(([k, v]) => addMetaRow(k, v));
+        Object.entries(meta).forEach(([k, v]) => { if (k !== 'do_not_notify') addMetaRow(k, v); });
         $('#ptm-player-form-title').text('Edit Player');
         $('#ptm-player-submit').text('Update Player');
         openPlayerForm();
