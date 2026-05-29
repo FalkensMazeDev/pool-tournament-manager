@@ -320,12 +320,13 @@
         '<\/div><\/div>'
     );
 
-    $(document).on('click', '.ptm-qr-toggle', function() {
+    $(document).on('click', '.ptm-qr-toggle', function(e) {
+        e.stopPropagation();
         var url = $(this).data('url');
         if (!url) return;
         $('#ptm-qr-popup-url').text(url);
         $('#ptm-qr-popup-canvas').empty();
-        try {
+        if (typeof QRCode !== 'undefined') {
             new QRCode(document.getElementById('ptm-qr-popup-canvas'), {
                 text: url,
                 width: 220,
@@ -334,7 +335,9 @@
                 colorLight: '#ffffff',
                 correctLevel: QRCode.CorrectLevel.M
             });
-        } catch(e) { /* library unavailable */ }
+        } else {
+            $('#ptm-qr-popup-canvas').text('QR library not loaded.');
+        }
         $('#ptm-qr-popup').css('display', 'flex');
     });
 
@@ -583,6 +586,18 @@
     $(document).on('click', '.ptm-notify-players', function() {
         const btn     = $(this);
         const matchId = btn.data('match');
+        const p1name  = btn.data('p1name') || 'Player 1';
+        const p1email = btn.data('p1email') || '(no email)';
+        const p2name  = btn.data('p2name') || 'Player 2';
+        const p2email = btn.data('p2email') || '(no email)';
+
+        const msg = 'Send match notification emails?\n\n'
+            + '  • ' + p1name + ' — ' + p1email + '\n'
+            + '  • ' + p2name + ' — ' + p2email + '\n\n'
+            + 'Players without an email address will be skipped.';
+
+        if (!confirm(msg)) return;
+
         btn.prop('disabled', true).text('Sending...');
         $.ajax({
             url: PTM.adminUrl, method: 'POST',

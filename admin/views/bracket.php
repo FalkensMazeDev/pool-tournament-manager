@@ -55,7 +55,8 @@ $table_status = $tournament->status === 'active' ? PTM_Tables::get_table_status(
                         <button type="button" class="ptm-qr-toggle ptm-table-qr-btn" data-url="<?php echo esc_attr( $scorer_url ); ?>" title="Show QR code">⊞ QR</button>
                         <a href="<?php echo esc_url( $scorer_url ); ?>" target="_blank" class="ptm-token-link">📱 Scorer</a>
                         <?php
-                        $table_url = home_url( '/' . PTM_Settings::get( 'table_base_slug' ) . '/' . $tournament->slug . '/' . $t . '/' );
+                        $table_token = PTM_Tournament::get_table_token( $tournament_id );
+                        $table_url   = home_url( '/' . PTM_Settings::get( 'table_base_slug' ) . '/' . $tournament->slug . '/' . $t . '/' . $table_token . '/' );
                         ?>
                         <a href="<?php echo esc_url( $table_url ); ?>" target="_blank" class="ptm-token-link" style="margin-left:6px;">📺 Table View</a>
                         <button type="button" class="ptm-qr-toggle" data-url="<?php echo esc_attr( $table_url ); ?>" title="Table View QR">⊞ Table QR</button>
@@ -178,12 +179,18 @@ $table_status = $tournament->status === 'active' ? PTM_Tables::get_table_status(
                         <!-- Table scorer link + QR -->
                         <?php if ( $has_players && ! $is_complete && $match->score_token ) :
                             $scorer_url = home_url( '/' . PTM_Settings::get( 'scorer_base_slug' ) . '/' . $match->score_token );
+                            $p1_obj     = $match->player1_id ? PTM_Player::get( (int) $match->player1_id ) : [];
+                            $p2_obj     = $match->player2_id ? PTM_Player::get( (int) $match->player2_id ) : [];
                         ?>
                         <div class="ptm-match-scorer-link">
                             <a href="<?php echo esc_url( $scorer_url ); ?>" target="_blank" class="ptm-token-link">📱 Table Scorer</a>
                             <button type="button" class="ptm-qr-toggle" data-url="<?php echo esc_attr( $scorer_url ); ?>" title="Show QR code">⊞ QR</button>
                             <button type="button" class="ptm-notify-players button button-small"
                                     data-match="<?php echo $match->id; ?>"
+                                    data-p1name="<?php echo esc_attr( $match->player1_name ?? '' ); ?>"
+                                    data-p1email="<?php echo esc_attr( $p1_obj['email'] ?? '' ); ?>"
+                                    data-p2name="<?php echo esc_attr( $match->player2_name ?? '' ); ?>"
+                                    data-p2email="<?php echo esc_attr( $p2_obj['email'] ?? '' ); ?>"
                                     title="Email players their table assignment and scorer link">📧 Notify</button>
                         </div>
                         <?php endif; ?>
