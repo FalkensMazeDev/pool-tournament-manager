@@ -702,10 +702,10 @@ class PTM_Admin {
         $players = [];
         foreach ( [ 1, 2 ] as $slot ) {
             $pid   = (int) ( $match[ 'player' . $slot . '_id' ] ?? 0 );
-            $pname = $match[ 'player' . $slot . '_name' ] ?? '';
             if ( ! $pid ) continue;
             $player      = PTM_Player::get( $pid );
             $player_meta = PTM_Player::get_meta( $pid );
+            $pname = $player['name'] ?? $match[ 'player' . $slot . '_name' ] ?? '';
             $players[] = [
                 'slot'          => $slot,
                 'name'          => $pname,
