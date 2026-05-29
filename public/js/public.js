@@ -4,7 +4,6 @@
 
     var lastUpdated    = {};
     var pollTimers     = {};
-    var autoTimers     = {};
 
     // ----------------------------------------------------------------
     // Spectator bracket polling
@@ -27,13 +26,16 @@
                 if (!data.last_updated) return;
 
                 var key = 'tournament_' + tournamentId;
+                var changed = lastUpdated[key] && data.last_updated !== lastUpdated[key];
 
-                if (lastUpdated[key] && data.last_updated !== lastUpdated[key]) {
-                    // Something changed — re-fetch the full bracket
+                lastUpdated[key] = data.last_updated;
+
+                if (changed) {
                     refreshBracket(tournamentId);
                 }
 
-                lastUpdated[key] = data.last_updated;
+                // Always refresh table status on every poll
+                fetchTableStatus(tournamentId);
 
                 // Update timestamp display
                 var el = document.getElementById('ptm-pub-updated-' + tournamentId);
@@ -67,14 +69,6 @@
             var rounds = bracketData[side];
             if (!rounds) return;
 
-            var sectionEl = container.querySelector('#ptm-pub-' + side);
-            if (!sectionEl) return;
-
-            var roundsEl = sectionEl.querySelector('.ptm-bracket-pub-rounds');
-            if (!roundsEl) return;
-
-            // Update scores in existing match elements rather than full re-render
-            // to avoid disrupting any scroll position or tab state
             Object.keys(rounds).forEach(function(roundNum) {
                 rounds[roundNum].forEach(function(match) {
                     updatePublicMatch(container, match);
@@ -84,58 +78,59 @@
     }
 
     function updatePublicMatch(container, match) {
-        // Find match elements by scanning for player names
-        // Since we don't have match IDs in the public DOM, we key on the round/side/order
-        // A future enhancement can add data-match-id attributes to simplify this
-        var matchEls = container.querySelectorAll(
-            '#ptm-pub-' + match.bracket_side + ' .ptm-pub-match'
-        );
+        var el = container.querySelector('.ptm-pub-match[data-match-id="' + match.id + '"]');
+        if (!el) return;
 
-        matchEls.forEach(function(el) {
-            var names = el.querySelectorAll('.ptm-pub-name');
-            if (names.length < 2) return;
+        var names = el.querySelectorAll('.ptm-pub-name');
+        var scores = el.querySelectorAll('.ptm-pub-score');
 
-            var p1Name = names[0].textContent.trim();
-            var p2Name = names[1].textContent.trim();
-
-            if (
-                (match.player1_name && p1Name === match.player1_name) ||
-                (match.player2_name && p2Name === match.player2_name)
-            ) {
-                var scores = el.querySelectorAll('.ptm-pub-score');
-                if (scores[0]) scores[0].textContent = match.status !== 'pending' ? match.player1_score : '';
-                if (scores[1]) scores[1].textContent = match.status !== 'pending' ? match.player2_score : '';
-
-                // Update status class
-                el.className = el.className
-                    .replace(/ptm-pub-match--\w+/, '')
-                    .trim() + ' ptm-pub-match--' + match.status;
-
-                // Winner/loser highlighting
-                var players = el.querySelectorAll('.ptm-pub-player');
-                if (match.status === 'complete') {
-                    if (players[0]) {
-                        players[0].classList.toggle('ptm-pub-winner', match.winner_id == match.player1_id);
-                        players[0].classList.toggle('ptm-pub-loser',  match.winner_id != match.player1_id && !!match.player1_id);
-                    }
-                    if (players[1]) {
-                        players[1].classList.toggle('ptm-pub-winner', match.winner_id == match.player2_id);
-                        players[1].classList.toggle('ptm-pub-loser',  match.winner_id != match.player2_id && !!match.player2_id);
-                    }
-                    // Remove live dot if present
-                    var liveDot = el.querySelector('.ptm-pub-live-dot');
-                    if (liveDot) liveDot.remove();
-                }
-
-                // Add live dot for in_progress
-                if (match.status === 'in_progress' && !el.querySelector('.ptm-pub-live-dot')) {
-                    var dot = document.createElement('div');
-                    dot.className = 'ptm-pub-live-dot';
-                    dot.textContent = '● LIVE';
-                    el.appendChild(dot);
-                }
+        // Update player names (handles TBD → real name when player advances)
+        if (names[0]) {
+            if (match.player1_name) {
+                names[0].innerHTML = escHtmlPublic(match.player1_name);
+            } else {
+                names[0].innerHTML = '<em>TBD</em>';
             }
-        });
+        }
+        if (names[1]) {
+            if (match.player2_name) {
+                names[1].innerHTML = escHtmlPublic(match.player2_name);
+            } else {
+                names[1].innerHTML = '<em>TBD</em>';
+            }
+        }
+
+        // Update scores
+        if (scores[0]) scores[0].textContent = match.status !== 'pending' ? match.player1_score : '';
+        if (scores[1]) scores[1].textContent = match.status !== 'pending' ? match.player2_score : '';
+
+        // Update status class
+        el.className = el.className
+            .replace(/ptm-pub-match--\w+/, '')
+            .trim() + ' ptm-pub-match--' + match.status;
+
+        // Winner/loser highlighting
+        var players = el.querySelectorAll('.ptm-pub-player');
+        if (match.status === 'complete') {
+            if (players[0]) {
+                players[0].classList.toggle('ptm-pub-winner', match.winner_id == match.player1_id);
+                players[0].classList.toggle('ptm-pub-loser',  match.winner_id != match.player1_id && !!match.player1_id);
+            }
+            if (players[1]) {
+                players[1].classList.toggle('ptm-pub-winner', match.winner_id == match.player2_id);
+                players[1].classList.toggle('ptm-pub-loser',  match.winner_id != match.player2_id && !!match.player2_id);
+            }
+            var liveDot = el.querySelector('.ptm-pub-live-dot');
+            if (liveDot) liveDot.remove();
+        }
+
+        // Add live dot for in_progress
+        if (match.status === 'in_progress' && !el.querySelector('.ptm-pub-live-dot')) {
+            var dot = document.createElement('div');
+            dot.className = 'ptm-pub-live-dot';
+            dot.textContent = '● LIVE';
+            el.appendChild(dot);
+        }
     }
 
     // ----------------------------------------------------------------
@@ -147,7 +142,13 @@
             .then(function(data) {
                 renderTableStatus(tournamentId, data.tables || [], data.waiting || 0);
             })
-            .catch(function() {});
+            .catch(function() {
+                // Clear loading state on error so it doesn't stay stuck
+                var grid = document.getElementById('ptm-pub-tables-grid-' + tournamentId);
+                if (grid && grid.querySelector('.ptm-pub-tables-loading')) {
+                    grid.innerHTML = '';
+                }
+            });
     }
 
     function renderTableStatus(tournamentId, tables, waiting) {
@@ -211,27 +212,6 @@
     }
 
     // ----------------------------------------------------------------
-    // Auto-update checkbox (30s interval)
-    // ----------------------------------------------------------------
-    document.addEventListener('change', function(e) {
-        if (!e.target.classList.contains('ptm-autoupdate-toggle')) return;
-        var tid = e.target.dataset.tournament;
-        if (!tid) return;
-
-        if (e.target.checked) {
-            fetchTableStatus(tid);
-            refreshBracket(tid);
-            autoTimers[tid] = setInterval(function() {
-                fetchTableStatus(tid);
-                refreshBracket(tid);
-            }, 30000);
-        } else {
-            clearInterval(autoTimers[tid]);
-            delete autoTimers[tid];
-        }
-    });
-
-    // ----------------------------------------------------------------
     // Tabs (public bracket)
     // ----------------------------------------------------------------
     document.addEventListener('click', function(e) {
@@ -263,7 +243,6 @@
                 var liveBadge = el.querySelector('.ptm-live-badge');
                 if (liveBadge) {
                     initPolling(tid);
-                    fetchTableStatus(tid);
                 } else {
                     checkForUpdates(tid);
                 }

@@ -25,13 +25,6 @@ $sides     = $is_double ? [ 'winners', 'losers', 'finals' ] : [ 'winners' ];
     </div>
 
     <?php if ( $tournament->status === 'active' ) : ?>
-    <div class="ptm-pub-controls">
-        <label class="ptm-pub-autoupdate-label">
-            <input type="checkbox" id="ptm-autoupdate-<?php echo $tournament->id; ?>" class="ptm-autoupdate-toggle" data-tournament="<?php echo $tournament->id; ?>">
-            <?php _e( 'Auto-update every 30s', 'ptm-tournaments' ); ?>
-        </label>
-    </div>
-
     <div class="ptm-pub-tables" id="ptm-pub-tables-<?php echo $tournament->id; ?>" data-tournament="<?php echo $tournament->id; ?>">
         <div class="ptm-pub-tables-header"><?php _e( 'Tables', 'ptm-tournaments' ); ?></div>
         <div class="ptm-pub-tables-grid" id="ptm-pub-tables-grid-<?php echo $tournament->id; ?>">
@@ -68,7 +61,7 @@ $sides     = $is_double ? [ 'winners', 'losers', 'finals' ] : [ 'winners' ];
                 </div>
                 <div class="ptm-pub-round-matches">
                     <?php foreach ( $matches as $match ) : ?>
-                    <div class="ptm-pub-match ptm-pub-match--<?php echo esc_attr( $match->status ); ?>">
+                    <div class="ptm-pub-match ptm-pub-match--<?php echo esc_attr( $match->status ); ?>" data-match-id="<?php echo (int) $match->id; ?>">
 
                         <div class="ptm-pub-player <?php echo $match->status === 'complete' && $match->winner_id == $match->player1_id ? 'ptm-pub-winner' : ''; ?>
                                                    <?php echo $match->status === 'complete' && $match->winner_id != $match->player1_id && $match->player1_id ? 'ptm-pub-loser' : ''; ?>">
