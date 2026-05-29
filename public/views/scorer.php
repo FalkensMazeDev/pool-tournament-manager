@@ -6,6 +6,7 @@
     <title><?php echo esc_html( $match->tournament_name ); ?> — Score Entry</title>
     <link rel="stylesheet" href="<?php echo PTM_PLUGIN_URL; ?>public/css/scorer.css">
     <script src="<?php echo PTM_PLUGIN_URL; ?>admin/js/qrcode.min.js"></script>
+<?php $head_scripts = PTM_Settings::get( 'head_scripts' ); if ( $head_scripts ) echo $head_scripts . "\n"; ?>
 </head>
 <body class="ptm-scorer-body">
 
@@ -303,5 +304,6 @@
 })();
 </script>
 
+<?php $footer_scripts = PTM_Settings::get( 'footer_scripts' ); if ( $footer_scripts ) echo $footer_scripts . "\n"; ?>
 </body>
 </html>

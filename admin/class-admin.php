@@ -20,6 +20,7 @@ class PTM_Admin {
         add_action( 'wp_ajax_ptm_correct_score',         [ $this, 'ajax_correct_score' ] );
         add_action( 'wp_ajax_ptm_finalize_results',      [ $this, 'ajax_finalize_results' ] );
         add_action( 'wp_ajax_ptm_reopen_tournament',     [ $this, 'ajax_reopen_tournament' ] );
+        add_action( 'wp_ajax_ptm_send_match_email',      [ $this, 'ajax_send_match_email' ] );
         add_filter( 'admin_footer_text',                 [ $this, 'admin_footer_text' ] );
     }
 
@@ -653,6 +654,123 @@ class PTM_Admin {
         PTM_Tournament::set_status( $tournament_id, 'active' );
 
         wp_send_json_success( [ 'message' => 'Tournament reopened successfully.' ] );
+    }
+
+    public function ajax_send_match_email() {
+        check_ajax_referer( 'ptm_admin', 'nonce' );
+
+        if ( ! PTM_Roles::can_manage_tournaments() ) {
+            wp_send_json_error( [ 'message' => 'Permission denied.' ] );
+            return;
+        }
+
+        $match_id = absint( $_POST['match_id'] ?? 0 );
+        if ( ! $match_id ) {
+            wp_send_json_error( [ 'message' => 'Invalid match ID.' ] );
+            return;
+        }
+
+        $match = PTM_Match::get( $match_id );
+        if ( ! $match ) {
+            wp_send_json_error( [ 'message' => 'Match not found.' ] );
+            return;
+        }
+
+        $table_num      = (int) ( $match['table_number'] ?? 0 );
+        $scorer_url_raw = $match['score_token']
+            ? home_url( '/' . PTM_Settings::get( 'scorer_base_slug' ) . '/' . $match['score_token'] . '/' )
+            : '';
+
+        $tournament     = PTM_Tournament::get( (int) $match['tournament_id'] );
+        $tournament_name = $tournament['name'] ?? '';
+
+        $from_name  = PTM_Settings::get( 'notification_from_name' )  ?: get_bloginfo( 'name' );
+        $from_email = PTM_Settings::get( 'notification_from_email' ) ?: get_bloginfo( 'admin_email' );
+        $headers    = [
+            'Content-Type: text/html; charset=UTF-8',
+            'From: ' . $from_name . ' <' . $from_email . '>',
+        ];
+
+        $tpl_subject = PTM_Settings::get( 'notification_subject' ) ?: 'Your match is ready — Table {table}';
+        $tpl_body    = PTM_Settings::get( 'notification_body' );
+
+        // Collect both players
+        $players = [];
+        foreach ( [ 1, 2 ] as $slot ) {
+            $pid   = (int) ( $match[ 'player' . $slot . '_id' ] ?? 0 );
+            $pname = $match[ 'player' . $slot . '_name' ] ?? '';
+            if ( ! $pid ) continue;
+            $player  = PTM_Player::get( $pid );
+            $players[] = [
+                'slot'  => $slot,
+                'name'  => $pname,
+                'email' => $player['email'] ?? '',
+            ];
+        }
+
+        $p1_name = $players[0]['name'] ?? '';
+        $p2_name = $players[1]['name'] ?? '';
+
+        // Shared (non-recipient-specific) replacements
+        $shared = [
+            '{player1}'    => esc_html( $p1_name ),
+            '{player2}'    => esc_html( $p2_name ),
+            '{table}'      => $table_num ? (string) $table_num : '—',
+            '{tournament}' => esc_html( $tournament_name ),
+            '{scorer_url}' => esc_url( $scorer_url_raw ),
+            '{scorer_link}'=> $scorer_url_raw
+                ? '<a href="' . esc_url( $scorer_url_raw ) . '">' . esc_html( $scorer_url_raw ) . '</a>'
+                : '',
+        ];
+
+        $sent_to = [];
+        $skipped = [];
+
+        foreach ( $players as $p ) {
+            if ( ! $p['email'] ) {
+                $skipped[] = $p['name'];
+                continue;
+            }
+
+            // Determine opponent
+            $opponent = ( $p['slot'] === 1 ) ? $p2_name : $p1_name;
+
+            $per_player = [
+                '{player_name}' => esc_html( $p['name'] ),
+                '{opponent}'    => esc_html( $opponent ),
+            ];
+
+            $replacements = array_merge( $shared, $per_player );
+
+            $subject = str_replace( array_keys( $replacements ), array_values( $replacements ), $tpl_subject );
+            $body    = str_replace( array_keys( $replacements ), array_values( $replacements ), $tpl_body );
+
+            $full_body = '<!DOCTYPE html><html><body style="font-family:sans-serif;font-size:16px;color:#1e293b;max-width:600px;margin:0 auto;padding:24px;">'
+                . $body
+                . '</body></html>';
+
+            $result = wp_mail( $p['email'], $subject, $full_body, $headers );
+            if ( $result ) {
+                $sent_to[] = $p['name'];
+            } else {
+                $skipped[] = $p['name'] . ' (send failed)';
+            }
+        }
+
+        if ( empty( $sent_to ) && empty( $skipped ) ) {
+            wp_send_json_error( [ 'message' => 'No players found for this match.' ] );
+            return;
+        }
+
+        $msg = '';
+        if ( $sent_to ) {
+            $msg .= 'Email sent to: ' . implode( ', ', $sent_to ) . '. ';
+        }
+        if ( $skipped ) {
+            $msg .= 'Skipped (no email on file or send failed): ' . implode( ', ', $skipped ) . '.';
+        }
+
+        wp_send_json_success( [ 'message' => trim( $msg ) ] );
     }
 
     public function admin_footer_text( string $text ): string {

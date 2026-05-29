@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo esc_html( $page_title ); ?></title>
     <link rel="stylesheet" href="<?php echo esc_url( PTM_PLUGIN_URL . 'public/css/public.css?v=' . PTM_VERSION ); ?>">
+<?php $head_scripts = PTM_Settings::get( 'head_scripts' ); if ( $head_scripts ) echo $head_scripts . "\n"; ?>
 </head>
 <body class="ptm-standalone-page">
 
@@ -25,5 +26,6 @@
     &copy; <?php echo date( 'Y' ); ?> <a href="https://www.billiardgreg.com" target="_blank" rel="noopener noreferrer">Greg Whitehead</a>
 </footer>
 
+<?php $footer_scripts = PTM_Settings::get( 'footer_scripts' ); if ( $footer_scripts ) echo $footer_scripts . "\n"; ?>
 </body>
 </html>

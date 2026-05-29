@@ -182,6 +182,9 @@ $table_status = $tournament->status === 'active' ? PTM_Tables::get_table_status(
                         <div class="ptm-match-scorer-link">
                             <a href="<?php echo esc_url( $scorer_url ); ?>" target="_blank" class="ptm-token-link">📱 Table Scorer</a>
                             <button type="button" class="ptm-qr-toggle" data-url="<?php echo esc_attr( $scorer_url ); ?>" title="Show QR code">⊞ QR</button>
+                            <button type="button" class="ptm-notify-players button button-small"
+                                    data-match="<?php echo $match->id; ?>"
+                                    title="Email players their table assignment and scorer link">📧 Notify</button>
                         </div>
                         <?php endif; ?>
 

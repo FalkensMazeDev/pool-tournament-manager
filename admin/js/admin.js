@@ -488,6 +488,25 @@
         link.click();
     });
 
+    // ── Notify Players (match email) ──────────────────────────────────
+    $(document).on('click', '.ptm-notify-players', function() {
+        const btn     = $(this);
+        const matchId = btn.data('match');
+        btn.prop('disabled', true).text('Sending...');
+        $.ajax({
+            url: PTM.adminUrl, method: 'POST',
+            data: { action: 'ptm_send_match_email', nonce: PTM.nonce, match_id: matchId },
+            success: function(res) {
+                btn.prop('disabled', false).text('📧 Notify');
+                alert(res.success ? (res.data.message || 'Sent!') : ('Error: ' + (res.data.message || 'Unknown error')));
+            },
+            error: function() {
+                btn.prop('disabled', false).text('📧 Notify');
+                alert('Network error. Please try again.');
+            }
+        });
+    });
+
     // ── Reopen Tournament ─────────────────────────────────────────────────────
     $(document).on('click', '#ptm-reopen-tournament', function() {
         const btn = $(this);
@@ -593,6 +612,31 @@
                 alert('Network error.');
             }
         });
+    });
+
+    // ── Email template merge-tag insert ──────────────────────────────
+    $(document).on('click', '.ptm-insert-tag', function(e) {
+        e.preventDefault();
+        var tag    = $(this).data('tag');
+        var edId   = 'notification_body';
+
+        // TinyMCE (visual tab)
+        if (typeof window.tinymce !== 'undefined') {
+            var ed = window.tinymce.get(edId);
+            if (ed && !ed.isHidden()) {
+                ed.execCommand('mceInsertContent', false, tag);
+                return;
+            }
+        }
+
+        // Quicktags / plain textarea fallback
+        var ta = document.getElementById(edId);
+        if (!ta) return;
+        var start = ta.selectionStart;
+        var end   = ta.selectionEnd;
+        ta.value  = ta.value.substring(0, start) + tag + ta.value.substring(end);
+        ta.selectionStart = ta.selectionEnd = start + tag.length;
+        ta.focus();
     });
 
 })(jQuery);
