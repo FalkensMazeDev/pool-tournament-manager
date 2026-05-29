@@ -127,6 +127,7 @@
     $(document).on('click', '.ptm-score-btn', function() {
         const btn = $(this);
         btn.prop('disabled', true);
+        recordUserActivity();
         $.ajax({
             url: PTM.adminUrl, method: 'POST',
             data: { action: 'ptm_admin_score', nonce: PTM.nonce, match_id: btn.data('match'), player_slot: btn.data('slot'), score_action: btn.data('action') },
@@ -154,7 +155,13 @@
         $p.eq(0).toggleClass('ptm-winner', match.winner_id == match.player1_id).toggleClass('ptm-loser', match.winner_id != match.player1_id && !!match.player1_id);
         $p.eq(1).toggleClass('ptm-winner', match.winner_id == match.player2_id).toggleClass('ptm-loser', match.winner_id != match.player2_id && !!match.player2_id);
         $m.append('<div class="ptm-match-complete-badge">✓ Complete</div>');
-        setTimeout(() => location.reload(), 1500);
+        // Refresh bracket in-place so next-round player slots update; fall back to reload on error
+        const bracketTid = $('#ptm-tournament-id').val();
+        if (bracketTid) {
+            setTimeout(function() { refreshAdminBracket(bracketTid, true); }, 1200);
+        } else {
+            setTimeout(() => location.reload(), 1500);
+        }
     }
 
     // ── Bracket tabs
@@ -166,11 +173,140 @@
 
     $('#ptm-refresh-bracket').on('click', () => location.reload());
 
+    // ── Admin bracket auto-polling ─────────────────────────────────────────────
+
+    var adminLastUpdated  = null;
+    var adminLastActivity = Date.now();
+    var IDLE_RELOAD_MS    = 60000; // full reload after 60s idle when structural change detected
+
+    function recordUserActivity() {
+        adminLastActivity = Date.now();
+    }
+
+    $(document).on('click keydown', recordUserActivity);
+
+    function updateLastUpdatedDisplay(ts) {
+        if (!ts) return;
+        var d = new Date(ts.indexOf('Z') === -1 ? ts + ' UTC' : ts);
+        $('#ptm-last-updated').text('Last updated: ' + d.toLocaleTimeString());
+    }
+
+    function refreshAdminBracket(tid, forceReloadOnStructural) {
+        $.get(PTM.restUrl + 'tournament/' + tid + '/bracket', function(res) {
+            if (!res.bracket) return;
+            var structural = false;
+            var sides = ['winners', 'losers', 'finals'];
+            sides.forEach(function(side) {
+                var rounds = res.bracket[side];
+                if (!rounds) return;
+                Object.keys(rounds).forEach(function(roundNum) {
+                    rounds[roundNum].forEach(function(match) {
+                        if (applyAdminMatchUpdate(match)) structural = true;
+                    });
+                });
+            });
+            if (structural && forceReloadOnStructural) {
+                location.reload();
+            }
+        }).fail(function() {
+            if (forceReloadOnStructural) location.reload();
+        });
+    }
+
+    // Returns true if a structural change was found (player slot filled, controls added/removed).
+    function applyAdminMatchUpdate(match) {
+        var $m = $('#ptm-match-' + match.id);
+        if (!$m.length) return false;
+        var structural = false;
+
+        // Update scores
+        $m.find('.ptm-match-player').eq(0).find('.ptm-player-score').text(match.player1_score);
+        $m.find('.ptm-match-player').eq(1).find('.ptm-player-score').text(match.player2_score);
+
+        // Update player names — TBD → real name counts as structural
+        var $p1name = $m.find('.ptm-match-player').eq(0).find('.ptm-player-name');
+        var $p2name = $m.find('.ptm-match-player').eq(1).find('.ptm-player-name');
+        if (match.player1_name && $p1name.find('em.ptm-tbd').length) {
+            $p1name.text(match.player1_name);
+            structural = true;
+        }
+        if (match.player2_name && $p2name.find('em.ptm-tbd').length) {
+            $p2name.text(match.player2_name);
+            structural = true;
+        }
+
+        // Update status class
+        var prevClass = ($m.attr('class') || '').match(/ptm-match--(\w+)/);
+        var prevStatus = prevClass ? prevClass[1] : null;
+        $m.removeClass('ptm-match--pending ptm-match--in_progress ptm-match--complete')
+          .addClass('ptm-match--' + match.status);
+
+        // Handle newly completed match arriving via external scorer
+        if (match.status === 'complete' && prevStatus !== 'complete') {
+            $m.find('.ptm-score-controls, .ptm-match-scorer-link').remove();
+            var $p = $m.find('.ptm-match-player');
+            $p.eq(0).toggleClass('ptm-winner', match.winner_id == match.player1_id)
+                    .toggleClass('ptm-loser', match.winner_id != match.player1_id && !!match.player1_id);
+            $p.eq(1).toggleClass('ptm-winner', match.winner_id == match.player2_id)
+                    .toggleClass('ptm-loser', match.winner_id != match.player2_id && !!match.player2_id);
+            if (!$m.find('.ptm-match-complete-badge').length) {
+                $m.append('<div class="ptm-match-complete-badge">✓ Complete</div>');
+            }
+            structural = true;
+        }
+
+        return structural;
+    }
+
+    function refreshAdminTables(tid) {
+        $.get(PTM.restUrl + 'tournament/' + tid + '/tables', function(res) {
+            var tables  = res.tables  || [];
+            var waiting = res.waiting || 0;
+
+            // Update scores on busy table cards
+            tables.forEach(function(t) {
+                if (!t.match) return;
+                var $card = $('.ptm-table-grid .ptm-table-card').eq(t.table - 1);
+                var $score = $card.find('.ptm-table-score');
+                if ($score.length) {
+                    $score.text(t.match.player1_score + ' – ' + t.match.player2_score);
+                }
+            });
+
+            // Update waiting badge
+            var $badge = $('.ptm-table-dashboard-header .ptm-waiting-badge, .ptm-table-dashboard-header .ptm-waiting-clear');
+            if (waiting > 0) {
+                $badge.text(waiting + ' match' + (waiting === 1 ? '' : 'es') + ' waiting for a table')
+                      .removeClass('ptm-waiting-clear').addClass('ptm-waiting-badge');
+            } else {
+                $badge.text('✓ All ready matches are assigned')
+                      .removeClass('ptm-waiting-badge').addClass('ptm-waiting-clear');
+            }
+        });
+    }
+
+    function checkAdminUpdates(tid) {
+        $.get(PTM.restUrl + 'tournament/' + tid + '/updated', function(res) {
+            if (!res.last_updated) return;
+
+            updateLastUpdatedDisplay(res.last_updated);
+
+            var changed = adminLastUpdated && res.last_updated !== adminLastUpdated;
+            adminLastUpdated = res.last_updated;
+
+            if (changed) {
+                var idle = Date.now() - adminLastActivity > IDLE_RELOAD_MS;
+                refreshAdminBracket(tid, idle);
+                refreshAdminTables(tid);
+            }
+        });
+    }
+
     const tid = $('#ptm-tournament-id').val();
     if (tid) {
-        $.get(PTM.restUrl + 'tournament/' + tid + '/updated', function(res) {
-            if (res.last_updated) $('#ptm-last-updated').text('Last updated: ' + new Date(res.last_updated).toLocaleTimeString());
-        });
+        // Fetch immediately then poll every 10 s
+        checkAdminUpdates(tid);
+        setInterval(function() { checkAdminUpdates(tid); }, 10000);
     }
 
     // ── QR modal overlay
