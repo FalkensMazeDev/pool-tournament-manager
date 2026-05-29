@@ -272,6 +272,8 @@ class PTM_Admin {
             'is_public'        => ! empty( $_POST['is_public'] )        ? 1 : 0,
             'num_tables'       => $_POST['num_tables'] ?? 4,
             'entrance_fee'     => $_POST['entrance_fee'] ?? 0,
+            'director_fee'     => $_POST['director_fee'] ?? 0,
+            'money_added'      => $_POST['money_added']  ?? 0,
             'slug'             => $_POST['slug'] ?? '',
             'tournament_date'  => $_POST['tournament_date']  ?? '',
         ];
