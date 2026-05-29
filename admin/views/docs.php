@@ -21,6 +21,8 @@
         <a href="#section-roles">10. User Roles</a>
         <a href="#section-handicap">11. Handicap System</a>
         <a href="#section-tables">12. Table Management</a>
+        <a href="#section-tracking">13. Tracking &amp; Analytics Scripts</a>
+        <a href="#section-notifications">14. Match Notification Emails</a>
     </div>
 
     <!-- ── Overview ─────────────────────────────────────────────────────── -->
@@ -55,7 +57,7 @@
         <p>Go to <strong>Tournaments → Player Registry</strong> to manage players.</p>
         <ul>
             <li>Players are stored permanently — add them once and they're available for every future tournament.</li>
-            <li>Each player can have an optional email and phone number (for future notification features).</li>
+            <li>Each player can have an optional <strong>email address</strong> — used to send match notifications (see <a href="#section-notifications">Match Notification Emails</a>) — and a phone number for your own reference.</li>
             <li>The <strong>Stats</strong> button on each player shows their career match/game record and finish positions.</li>
             <li>Deleting a player from the registry does <em>not</em> remove their historical tournament results.</li>
         </ul>
@@ -132,6 +134,7 @@
             <li>A match automatically completes and advances players when a player reaches their Race To number.</li>
             <li>For Double Elimination: tabs for <strong>Winners Bracket</strong>, <strong>Losers Bracket</strong>, and <strong>Grand Finals</strong>.</li>
             <li>A <strong>📱 Table Scorer Link</strong> under each active match — send this to whoever is running that table.</li>
+            <li>A <strong>📧 Notify</strong> button on each active match — sends a table assignment email to each player who has an email on file. See <a href="#section-notifications">Match Notification Emails</a>.</li>
         </ul>
         <div class="ptm-docs-note">
             <strong>Tip:</strong> Keep this page open on a laptop or tablet during the tournament. It auto-shows completion when matches finish via the score buttons. Click <strong>↻ Refresh</strong> or reload to pull in scores entered by table scorers on their devices.
@@ -314,6 +317,102 @@
             <li>In the full bracket, click the <strong>⊞ QR</strong> button next to any match's scorer link to show a larger QR code.</li>
             <li>On the <strong>scorer page itself</strong>, tap the ⊞ button in the top-right corner to show a share QR — useful if you need to hand off scoring to someone else mid-match.</li>
         </ul>
+    </div>
+
+    <!-- ── Tracking Scripts ─────────────────────────────────────────────── -->
+    <div class="ptm-docs-section" id="section-tracking">
+        <h2>13. Tracking &amp; Analytics Scripts</h2>
+        <p>Go to <strong>Tournaments → ⚙️ Settings → Tracking &amp; Analytics Scripts</strong> to inject custom HTML into every public-facing PTM page (bracket, results, table view, and scorer).</p>
+
+        <table class="ptm-docs-table">
+            <thead><tr><th>Field</th><th>Where it is injected</th><th>Typical use</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>&lt;head&gt; Scripts</strong></td>
+                    <td>Immediately before <code>&lt;/head&gt;</code> on every PTM standalone page.</td>
+                    <td>Google Analytics / GA4 <code>gtag</code> snippet, Meta Pixel <code>&lt;meta&gt;</code> tags, consent manager scripts.</td>
+                </tr>
+                <tr>
+                    <td><strong>Footer Scripts</strong></td>
+                    <td>Immediately before <code>&lt;/body&gt;</code> on every PTM standalone page.</td>
+                    <td>Chat widgets, heatmap tools (Hotjar, Microsoft Clarity), deferred analytics libraries.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="ptm-docs-note">
+            <strong>Which pages are "PTM standalone pages"?</strong> The bracket, results, table view, and scorer pages all bypass the WordPress theme and render their own HTML document — so WordPress's normal <code>wp_head()</code> / <code>wp_footer()</code> hooks don't fire on them. These fields are the way to get tracking code onto those pages. Pages that display PTM <em>shortcodes</em> inside a normal WordPress theme render through the theme as usual, so your theme's analytics setup covers those automatically.
+        </div>
+
+        <div class="ptm-docs-note ptm-note-important">
+            <strong>Raw HTML accepted:</strong> Paste the full <code>&lt;script&gt;</code> tag (or any HTML) exactly as the provider gives it to you. The content is saved as-is and output verbatim — do not encode the angle brackets.
+        </div>
+    </div>
+
+    <!-- ── Match Notifications ───────────────────────────────────────────── -->
+    <div class="ptm-docs-section" id="section-notifications">
+        <h2>14. Match Notification Emails</h2>
+        <p>During a live tournament you can email players directly from the bracket view to let them know their match is up, which table to report to, and how to access the scorer page.</p>
+
+        <h3>Sending a Notification</h3>
+        <ol>
+            <li>Open the <strong>Admin Bracket View</strong> for an active tournament.</li>
+            <li>Find the match card for the match that's ready.</li>
+            <li>Click the <strong>📧 Notify</strong> button on that card.</li>
+            <li>An email is sent to every player in the match who has an email address on file. Players without an email are reported as skipped in the confirmation alert.</li>
+        </ol>
+
+        <div class="ptm-docs-note">
+            <strong>Player emails:</strong> Add or edit email addresses in <strong>Tournaments → Player Registry → Edit Player</strong>.
+        </div>
+
+        <h3>Customizing the Email</h3>
+        <p>Go to <strong>Tournaments → ⚙️ Settings → Match Notification Email</strong> to configure:</p>
+
+        <table class="ptm-docs-table">
+            <thead><tr><th>Field</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><strong>From Name</strong></td><td>The sender name shown in the recipient's inbox. Defaults to the site name if left blank.</td></tr>
+                <tr><td><strong>From Email Address</strong></td><td>The reply-to / from address. Defaults to the WordPress admin email if left blank.</td></tr>
+                <tr><td><strong>Subject Line</strong></td><td>Plain text subject. Merge tags are supported (e.g. <code>Match Notification — Table {table}</code>).</td></tr>
+                <tr><td><strong>Email Body</strong></td><td>Full WYSIWYG editor (bold, italic, links, lists). Merge tags are supported anywhere in the body.</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Merge Tags</h3>
+        <p>Merge tags are replaced with live match data when each email is sent. Click any tag button in the Settings panel to insert it at the cursor position in the editor.</p>
+
+        <table class="ptm-docs-table">
+            <thead><tr><th>Tag</th><th>Replaced with</th></tr></thead>
+            <tbody>
+                <tr><td><code>{player_name}</code></td><td>The <em>recipient's</em> name. Resolves differently for each email sent — Player 1 gets their name, Player 2 gets theirs.</td></tr>
+                <tr><td><code>{opponent}</code></td><td>The <em>other</em> player's name (who the recipient is playing against).</td></tr>
+                <tr><td><code>{player1}</code></td><td>Always the name of the player in slot 1 of the match — same in both emails.</td></tr>
+                <tr><td><code>{player2}</code></td><td>Always the name of the player in slot 2 of the match — same in both emails.</td></tr>
+                <tr><td><code>{table}</code></td><td>The table number assigned to this match (e.g. <code>3</code>). Outputs <code>—</code> if no table is assigned yet.</td></tr>
+                <tr><td><code>{tournament}</code></td><td>The tournament name.</td></tr>
+                <tr><td><code>{scorer_url}</code></td><td>The plain scorer URL for the match (suitable for display as text or inside an <code>&lt;a href&gt;</code>).</td></tr>
+                <tr><td><code>{scorer_link}</code></td><td>A ready-made clickable <code>&lt;a&gt;</code> link to the scorer page. Paste this where you want the hyperlink to appear.</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Example Subject &amp; Body</h3>
+        <div class="ptm-docs-code-block">
+            <p><strong>Subject:</strong></p>
+            <code>Your match is ready — Table {table}</code>
+            <br><br>
+            <p><strong>Body:</strong></p>
+            <code>
+                Hi {player_name},<br><br>
+                Your match against {opponent} is up on Table {table}.<br><br>
+                One of you should keep score using this link: {scorer_link}<br><br>
+                Good luck!
+            </code>
+        </div>
+
+        <div class="ptm-docs-note">
+            <strong>Email delivery:</strong> Notifications are sent through WordPress's <code>wp_mail()</code> function, which uses whatever mail transport your hosting provides (PHP mail, SMTP plugin, SendGrid, etc.). If emails aren't being delivered, install an SMTP plugin such as WP Mail SMTP and configure it with your mail provider's credentials.
+        </div>
     </div>
 
     <!-- ── Handicap ──────────────────────────────────────────────────────── -->
