@@ -458,6 +458,14 @@
 .ptm-qr-label { font-size: 11px; color: #646970; margin: 6px 0 0; }
 .ptm-match-scorer-link { position: relative; }
 
+/* QR modal overlay */
+#ptm-qr-modal { position: fixed; inset: 0; z-index: 99999; display: flex; align-items: center; justify-content: center; }
+#ptm-qr-modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.55); }
+#ptm-qr-modal-box { position: relative; background: #fff; border-radius: 10px; padding: 24px 28px 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.25); text-align: center; max-width: 320px; width: 90%; }
+#ptm-qr-modal-box svg { max-width: 260px; height: auto; display: block; margin: 0 auto; }
+#ptm-qr-modal-url { margin: 12px 0 0; font-size: 12px; color: #444; word-break: break-all; }
+#ptm-qr-modal-close { position: absolute; top: 8px; right: 10px; background: none; border: none; font-size: 22px; line-height: 1; cursor: pointer; color: #666; padding: 0; }
+
 /* Delete section — sits below the save form, right-aligned */
 .ptm-delete-section {
     margin-top: 8px;

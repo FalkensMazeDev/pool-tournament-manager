@@ -271,14 +271,31 @@ class PTM_Match {
             [ '%s', '%d' ], [ '%d' ]
         );
 
-        // Advance winner to next match
-        if ( $match['next_match_id'] ) {
-            self::place_player( (int) $match['next_match_id'], $winner_id );
-        }
+        // Grand Finals main match (double elim): only go to bracket reset if the
+        // losers-bracket player won. If the winners-bracket player wins, it's over.
+        if ( $match['bracket_side'] === 'finals' && (int) $match['round'] === 1 && $match['next_match_id'] ) {
+            $wb_final_winner = (int) $wpdb->get_var( $wpdb->prepare(
+                "SELECT winner_id FROM {$wpdb->prefix}ptm_matches
+                  WHERE next_match_id = %d AND bracket_side = 'winners'",
+                $match['id']
+            ) );
 
-        // Route loser in double elimination
-        if ( $match['loser_next_match_id'] ) {
-            self::place_player( (int) $match['loser_next_match_id'], $loser_id );
+            if ( $winner_id !== $wb_final_winner ) {
+                // LB player won — send both players to the bracket reset
+                self::place_player( (int) $match['next_match_id'], $winner_id );
+                self::place_player( (int) $match['next_match_id'], $loser_id );
+            }
+            // WB player won — no reset, fall through to maybe_complete_tournament
+        } else {
+            // Advance winner to next match
+            if ( $match['next_match_id'] ) {
+                self::place_player( (int) $match['next_match_id'], $winner_id );
+            }
+
+            // Route loser in double elimination
+            if ( $match['loser_next_match_id'] ) {
+                self::place_player( (int) $match['loser_next_match_id'], $loser_id );
+            }
         }
 
         // Record stats for both players
