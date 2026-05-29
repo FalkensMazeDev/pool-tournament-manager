@@ -20,13 +20,14 @@
 }
 
 .ptm-roster-layout {
-    display: grid;
-    grid-template-columns: 1fr 280px;
+    display: flex;
+    flex-direction: column;
     gap: 20px;
     margin-top: 20px;
+    max-width: 860px;
 }
 @media (max-width: 960px) {
-    .ptm-roster-layout { grid-template-columns: 1fr; }
+    .ptm-roster-layout { max-width: 100%; }
 }
 
 .ptm-players-layout {
@@ -328,7 +329,8 @@
 }
 
 /* Postbox header actions */
-.postbox-header { display: flex; align-items: center; justify-content: space-between; }
+.postbox-header { display: flex; align-items: center; justify-content: space-between; padding-left: 12px; }
+.postbox-header h2 { padding-left: 4px; }
 .postbox-header-actions { padding-right: 15px; display: flex; gap: 8px; }
 
 /* ----------------------------------------------------------------

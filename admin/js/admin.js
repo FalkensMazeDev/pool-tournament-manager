@@ -247,7 +247,7 @@
         if (q.length < 2) { $('#ptm-player-suggestions').hide().empty(); return; }
         searchTimer = setTimeout(function() {
             $.ajax({
-                url: PTM.adminUrl, data: { action: 'ptm_player_search', nonce: PTM.nonce, q: q },
+                url: PTM.adminUrl, data: { action: 'ptm_player_search', nonce: PTM.nonce, q: q, tournament_id: $('#ptm-tournament-id').val() },
                 success: function(res) {
                     if (!res.success) return;
                     const $box = $('#ptm-player-suggestions').empty();
