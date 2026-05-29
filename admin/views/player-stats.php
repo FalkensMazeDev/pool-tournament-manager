@@ -18,6 +18,7 @@
         'games_won'      => 0,
         'games_lost'     => 0,
         'wins_1st'       => 0,
+        'money_won'      => 0.0,
     ];
     foreach ( $stats as $s ) {
         $totals['matches_played'] += $s->matches_played;
@@ -26,6 +27,7 @@
         $totals['games_won']      += $s->games_won;
         $totals['games_lost']     += $s->games_lost;
         if ( $s->finish_position == 1 ) $totals['wins_1st']++;
+        $totals['money_won']      += isset( $s->money_won ) ? (float) $s->money_won : 0.0;
     }
     $win_pct = $totals['matches_played'] > 0
         ? round( $totals['matches_won'] / $totals['matches_played'] * 100, 1 )
@@ -54,6 +56,10 @@
             <div class="ptm-stat-value"><?php echo $totals['wins_1st']; ?></div>
             <div class="ptm-stat-label"><?php _e( '1st Place Finishes', 'ptm-tournaments' ); ?></div>
         </div>
+        <div class="ptm-stat-card">
+            <div class="ptm-stat-value">$<?php echo number_format( $totals['money_won'], 2 ); ?></div>
+            <div class="ptm-stat-label"><?php _e( 'Money Won', 'ptm-tournaments' ); ?></div>
+        </div>
     </div>
 
     <!-- Per-tournament breakdown -->
@@ -72,6 +78,7 @@
                         <th><?php _e( 'Finish', 'ptm-tournaments' ); ?></th>
                         <th><?php _e( 'Matches W–L', 'ptm-tournaments' ); ?></th>
                         <th><?php _e( 'Games W–L', 'ptm-tournaments' ); ?></th>
+                        <th><?php _e( 'Money Won', 'ptm-tournaments' ); ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -99,6 +106,7 @@
                         </td>
                         <td><?php echo $s->matches_won; ?> – <?php echo $s->matches_lost; ?></td>
                         <td><?php echo $s->games_won;   ?> – <?php echo $s->games_lost;   ?></td>
+                        <td><?php echo isset( $s->money_won ) && $s->money_won > 0 ? '$' . number_format( (float) $s->money_won, 2 ) : '—'; ?></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>

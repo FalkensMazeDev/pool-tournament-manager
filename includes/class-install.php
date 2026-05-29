@@ -4,7 +4,7 @@ defined( 'ABSPATH' ) || exit;
 class PTM_Install {
 
     const DB_VERSION_OPTION = 'ptm_db_version';
-    const DB_VERSION        = '1.5.0';
+    const DB_VERSION        = '1.6.0';
 
     public static function activate() {
         self::create_tables();
@@ -34,6 +34,11 @@ class PTM_Install {
         global $wpdb;
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
         $charset = $wpdb->get_charset_collate();
+
+        if ( version_compare( $from, '1.6.0', '<' ) ) {
+            // Add money_won to player stats
+            $wpdb->query( "ALTER TABLE {$wpdb->prefix}ptm_player_stats ADD COLUMN IF NOT EXISTS money_won DECIMAL(10,2) NOT NULL DEFAULT 0.00" );
+        }
 
         if ( version_compare( $from, '1.5.0', '<' ) ) {
             dbDelta( "CREATE TABLE {$wpdb->prefix}ptm_tournaments (
@@ -187,6 +192,7 @@ class PTM_Install {
             games_won       SMALLINT UNSIGNED NOT NULL DEFAULT 0,
             games_lost      SMALLINT UNSIGNED NOT NULL DEFAULT 0,
             finish_position SMALLINT UNSIGNED          DEFAULT NULL,
+            money_won       DECIMAL(10,2)    NOT NULL DEFAULT 0.00,
             PRIMARY KEY (id),
             UNIQUE KEY player_tournament (player_id, tournament_id),
             KEY player_id (player_id),

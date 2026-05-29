@@ -497,6 +497,44 @@ class PTM_Match {
             }
             $assigned += $count;
         }
+
+        // Record money won based on payout rules
+        $payouts = PTM_Tournament::calculate_payouts( $tournament_id );
+        if ( ! empty( $payouts ) ) {
+            // Reset money_won for this tournament first
+            $wpdb->query(
+                $wpdb->prepare(
+                    "UPDATE {$wpdb->prefix}ptm_player_stats SET money_won = 0.00 WHERE tournament_id = %d",
+                    $tournament_id
+                )
+            );
+
+            // Get all finish positions for this tournament
+            $positions = $wpdb->get_results(
+                $wpdb->prepare(
+                    "SELECT player_id, finish_position FROM {$wpdb->prefix}ptm_player_stats
+                     WHERE tournament_id = %d AND finish_position IS NOT NULL",
+                    $tournament_id
+                ),
+                ARRAY_A
+            );
+
+            foreach ( $positions as $row ) {
+                $pos = (int) $row['finish_position'];
+                foreach ( $payouts as $rule ) {
+                    if ( $pos >= (int) $rule['position_from'] && $pos <= (int) $rule['position_to'] ) {
+                        $wpdb->update(
+                            $wpdb->prefix . 'ptm_player_stats',
+                            [ 'money_won' => $rule['amount'] ],
+                            [ 'player_id' => (int) $row['player_id'], 'tournament_id' => $tournament_id ],
+                            [ '%f' ],
+                            [ '%d', '%d' ]
+                        );
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     // ── Convenience aliases (used by REST + admin AJAX) ───────────────────────
