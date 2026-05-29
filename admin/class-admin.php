@@ -392,6 +392,7 @@ class PTM_Admin {
                     $meta[ $k ] = $meta_values[ $i ] ?? '';
                 }
             }
+            unset( $meta['do_not_notify'] );
             if ( ! empty( $_POST['do_not_notify'] ) ) {
                 $meta['do_not_notify'] = '1';
             }
