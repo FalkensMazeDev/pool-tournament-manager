@@ -255,8 +255,38 @@ class PTM_Public {
         $wp_query->is_singular     = true;
         $wp_query->is_home         = false;
 
-        require get_page_template() ?: get_index_template();
+        $this->disable_page_builders();
+        require $this->resolve_page_template();
         exit;
+    }
+
+    /**
+     * Suppress page builder plugins so they don't intercept PTM virtual pages.
+     * Covers Divi, Elementor, Beaver Builder, and Gutenberg FSE.
+     */
+    private function disable_page_builders(): void {
+        // Divi
+        add_filter( 'et_pb_is_pagebuilder_used', '__return_false' );
+        add_filter( 'et_fb_enabled',             '__return_false' );
+        // Elementor
+        add_filter( 'elementor/page/should_run',    '__return_false' );
+        add_filter( 'elementor/document/urls/edit', '__return_false' );
+        // Beaver Builder
+        add_filter( 'fl_builder_is_enabled', '__return_false' );
+        // Gutenberg Full-Site Editing
+        add_filter( 'use_block_editor_for_post', '__return_false' );
+    }
+
+    /**
+     * Resolves the best standard page template, bypassing builder-injected templates.
+     * Prefers page.php → singular.php → index.php over any builder-specific file.
+     */
+    private function resolve_page_template(): string {
+        $standard = locate_template( [ 'page.php', 'singular.php', 'index.php' ] );
+        if ( $standard ) {
+            return $standard;
+        }
+        return get_index_template();
     }
 
     // ----------------------------------------------------------------
