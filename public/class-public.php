@@ -188,14 +188,6 @@ class PTM_Public {
             wp_die( __( 'Tournament not found.', 'ptm-tournaments' ), '', [ 'response' => 404 ] );
         }
 
-        // Enqueue assets
-        wp_enqueue_style(  'ptm-public', PTM_PLUGIN_URL . 'public/css/public.css', [], PTM_VERSION );
-        wp_enqueue_script( 'ptm-public', PTM_PLUGIN_URL . 'public/js/public.js', [ 'jquery' ], PTM_VERSION, true );
-        wp_localize_script( 'ptm-public', 'PTM', [
-            'restUrl'      => rest_url( 'gdc/v1/' ),
-            'pollInterval' => (int) PTM_Settings::get( 'poll_interval_ms' ),
-        ] );
-
         // Build page content
         ob_start();
         if ( $sub_page === 'results' ) {
@@ -214,79 +206,11 @@ class PTM_Public {
         }
         $content_html = ob_get_clean();
 
-        // Titles
-        add_filter( 'document_title_parts', function( $parts ) use ( $tournament, $sub_page ) {
-            $parts['title'] = esc_html( $tournament->name )
-                . ( $sub_page === 'results' ? ' — Results' : '' );
-            return $parts;
-        } );
-        add_filter( 'the_content', fn() => $content_html );
-
-        // Inject synthetic post so theme renders normally
-        global $wp_query, $post;
-        $fake                  = new stdClass();
-        $fake->ID              = 0;
-        $fake->post_title      = $tournament->name;
-        $fake->post_content    = $content_html;
-        $fake->post_status     = 'publish';
-        $fake->post_type       = 'page';
-        $fake->post_name       = 'ptm-tournament-' . $tournament_id;
-        $fake->post_date       = current_time( 'mysql' );
-        $fake->post_date_gmt   = current_time( 'mysql', 1 );
-        $fake->post_modified   = $fake->post_date;
-        $fake->post_modified_gmt = $fake->post_date_gmt;
-        $fake->guid            = home_url( '/tournament/' . ( $tournament->slug ?? $tournament_id ) . '/' );
-        $fake->comment_status  = 'closed';
-        $fake->ping_status     = 'closed';
-        $fake->comment_count   = 0;
-        $fake->post_password   = '';
-        $fake->post_excerpt    = '';
-        $fake->post_parent     = 0;
-        $fake->menu_order      = 0;
-        $fake->filter          = 'raw';
-        $post                  = new WP_Post( $fake );
-
-        $wp_query->posts           = [ $post ];
-        $wp_query->post            = $post;
-        $wp_query->found_posts     = 1;
-        $wp_query->post_count      = 1;
-        $wp_query->is_404          = false;
-        $wp_query->is_page         = true;
-        $wp_query->is_singular     = true;
-        $wp_query->is_home         = false;
-
-        $this->disable_page_builders();
-        require $this->resolve_page_template();
+        // Render standalone page (bypasses theme entirely, same as scorer page)
+        $page_title = esc_html( $tournament->name )
+            . ( $sub_page === 'results' ? ' — Results' : '' );
+        require PTM_PLUGIN_DIR . 'public/views/standalone-page.php';
         exit;
-    }
-
-    /**
-     * Suppress page builder plugins so they don't intercept PTM virtual pages.
-     * Covers Divi, Elementor, Beaver Builder, and Gutenberg FSE.
-     */
-    private function disable_page_builders(): void {
-        // Divi
-        add_filter( 'et_pb_is_pagebuilder_used', '__return_false' );
-        add_filter( 'et_fb_enabled',             '__return_false' );
-        // Elementor
-        add_filter( 'elementor/page/should_run',    '__return_false' );
-        add_filter( 'elementor/document/urls/edit', '__return_false' );
-        // Beaver Builder
-        add_filter( 'fl_builder_is_enabled', '__return_false' );
-        // Gutenberg Full-Site Editing
-        add_filter( 'use_block_editor_for_post', '__return_false' );
-    }
-
-    /**
-     * Resolves the best standard page template, bypassing builder-injected templates.
-     * Prefers page.php → singular.php → index.php over any builder-specific file.
-     */
-    private function resolve_page_template(): string {
-        $standard = locate_template( [ 'page.php', 'singular.php', 'index.php' ] );
-        if ( $standard ) {
-            return $standard;
-        }
-        return get_index_template();
     }
 
     // ----------------------------------------------------------------
