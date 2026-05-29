@@ -614,4 +614,29 @@
         });
     });
 
+    // ── Email template merge-tag insert ──────────────────────────────
+    $(document).on('click', '.ptm-insert-tag', function(e) {
+        e.preventDefault();
+        var tag    = $(this).data('tag');
+        var edId   = 'notification_body';
+
+        // TinyMCE (visual tab)
+        if (typeof window.tinymce !== 'undefined') {
+            var ed = window.tinymce.get(edId);
+            if (ed && !ed.isHidden()) {
+                ed.execCommand('mceInsertContent', false, tag);
+                return;
+            }
+        }
+
+        // Quicktags / plain textarea fallback
+        var ta = document.getElementById(edId);
+        if (!ta) return;
+        var start = ta.selectionStart;
+        var end   = ta.selectionEnd;
+        ta.value  = ta.value.substring(0, start) + tag + ta.value.substring(end);
+        ta.selectionStart = ta.selectionEnd = start + tag.length;
+        ta.focus();
+    });
+
 })(jQuery);

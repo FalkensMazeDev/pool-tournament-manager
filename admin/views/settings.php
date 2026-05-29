@@ -205,8 +205,40 @@ $base_url = home_url( '/' );
             </div>
             <div class="inside">
                 <p class="description" style="margin-bottom:16px;">
-                    <?php _e( 'When you click "Notify Players" on a match card in the bracket view, an email is sent to each player who has an email address on file. The message tells them which table to report to and includes a link to the scorer page.', 'ptm-tournaments' ); ?>
+                    <?php _e( 'When you click "Notify Players" on a match card in the bracket view, an email is sent to each player who has an email address on file. Use the merge tags below to personalize the subject and body.', 'ptm-tournaments' ); ?>
                 </p>
+
+                <!-- Merge tag reference -->
+                <div style="background:#f6f7f7;border:1px solid #dcdcde;border-radius:4px;padding:12px 16px;margin-bottom:20px;">
+                    <strong style="display:block;margin-bottom:8px;"><?php _e( 'Available Merge Tags', 'ptm-tournaments' ); ?></strong>
+                    <table style="border-collapse:collapse;font-size:13px;width:100%;">
+                        <tbody>
+                            <?php
+                            $tags = [
+                                '{player_name}'  => __( 'The recipient\'s first/full name — resolves to the right player for each email sent.', 'ptm-tournaments' ),
+                                '{opponent}'     => __( 'The other player\'s name (the one the recipient is playing against).', 'ptm-tournaments' ),
+                                '{player1}'      => __( 'Always the name of Player 1 in the match (slot 1).', 'ptm-tournaments' ),
+                                '{player2}'      => __( 'Always the name of Player 2 in the match (slot 2).', 'ptm-tournaments' ),
+                                '{table}'        => __( 'The table number assigned to this match.', 'ptm-tournaments' ),
+                                '{tournament}'   => __( 'The tournament name.', 'ptm-tournaments' ),
+                                '{scorer_url}'   => __( 'The plain scorer URL for the match.', 'ptm-tournaments' ),
+                                '{scorer_link}'  => __( 'A clickable &lt;a&gt; link to the scorer page.', 'ptm-tournaments' ),
+                            ];
+                            foreach ( $tags as $tag => $desc ) :
+                            ?>
+                            <tr>
+                                <td style="padding:3px 12px 3px 0;white-space:nowrap;vertical-align:top;">
+                                    <button type="button" class="ptm-insert-tag button button-small"
+                                            style="font-family:monospace;cursor:pointer;"
+                                            data-tag="<?php echo esc_attr( $tag ); ?>"><?php echo esc_html( $tag ); ?></button>
+                                </td>
+                                <td style="padding:3px 0;color:#50575e;"><?php echo $desc; ?></td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+
                 <table class="form-table">
                     <tr>
                         <th><label for="notification_from_name"><?php _e( 'From Name', 'ptm-tournaments' ); ?></label></th>
@@ -226,6 +258,39 @@ $base_url = home_url( '/' );
                                    value="<?php echo esc_attr( $s['notification_from_email'] ); ?>"
                                    placeholder="<?php echo esc_attr( get_bloginfo( 'admin_email' ) ); ?>">
                             <p class="description"><?php _e( 'Leave blank to use the WordPress admin email.', 'ptm-tournaments' ); ?></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="notification_subject"><?php _e( 'Subject Line', 'ptm-tournaments' ); ?></label></th>
+                        <td>
+                            <input type="text" id="notification_subject" name="notification_subject"
+                                   class="large-text"
+                                   value="<?php echo esc_attr( $s['notification_subject'] ); ?>"
+                                   placeholder="Your match is ready — Table {table}">
+                            <p class="description"><?php _e( 'Merge tags are supported. Example: <code>Match Notification — Table {table}</code>', 'ptm-tournaments' ); ?></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="notification_body"><?php _e( 'Email Body', 'ptm-tournaments' ); ?></label></th>
+                        <td>
+                            <?php
+                            wp_editor(
+                                $s['notification_body'],
+                                'notification_body',
+                                [
+                                    'textarea_name' => 'notification_body',
+                                    'textarea_rows' => 12,
+                                    'media_buttons' => false,
+                                    'teeny'         => false,
+                                    'tinymce'       => [
+                                        'toolbar1' => 'bold,italic,underline,|,bullist,numlist,|,link,unlink,|,removeformat',
+                                        'toolbar2' => '',
+                                    ],
+                                    'quicktags'     => true,
+                                ]
+                            );
+                            ?>
+                            <p class="description" style="margin-top:8px;"><?php _e( 'Click a merge tag above to insert it at the cursor position in this editor.', 'ptm-tournaments' ); ?></p>
                         </td>
                     </tr>
                 </table>
