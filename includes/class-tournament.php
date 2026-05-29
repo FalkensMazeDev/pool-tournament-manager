@@ -42,21 +42,23 @@ class PTM_Tournament {
 
     public static function insert( array $data ): int|false {
         global $wpdb;
+        $clean  = self::sanitize( $data );
         $result = $wpdb->insert(
             $wpdb->prefix . 'ptm_tournaments',
-            self::sanitize( $data ),
-            self::formats()
+            $clean,
+            self::formats( $clean )
         );
         return $result ? (int) $wpdb->insert_id : false;
     }
 
     public static function update( int $id, array $data ): bool {
         global $wpdb;
+        $clean = self::sanitize( $data );
         return (bool) $wpdb->update(
             $wpdb->prefix . 'ptm_tournaments',
-            self::sanitize( $data ),
+            $clean,
             [ 'id' => $id ],
-            self::formats(),
+            self::formats( $clean ),
             [ '%d' ]
         );
     }
@@ -219,8 +221,31 @@ class PTM_Tournament {
         return $clean;
     }
 
-    private static function formats(): array {
-        return [ '%s', '%s', '%s', '%d', '%d', '%d', '%d', '%s', '%s', '%d' ];
+    private static function formats( array $data = [] ): array {
+        $map = [
+            'name'             => '%s',
+            'game_type'        => '%s',
+            'bracket_type'     => '%s',
+            'status'           => '%s',
+            'race_to_winners'  => '%d',
+            'race_to_losers'   => '%d',
+            'num_tables'       => '%d',
+            'entrance_fee'     => '%f',
+            'slug'             => '%s',
+            'handicap_enabled' => '%d',
+            'is_public'        => '%d',
+            'tournament_date'  => '%s',
+            'notes'            => '%s',
+            'created_by'       => '%d',
+        ];
+        if ( empty( $data ) ) {
+            return array_values( $map );
+        }
+        $formats = [];
+        foreach ( $data as $key => $_ ) {
+            $formats[] = $map[ $key ] ?? '%s';
+        }
+        return $formats;
     }
 
 

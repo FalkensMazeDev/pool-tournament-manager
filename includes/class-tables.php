@@ -74,8 +74,8 @@ class PTM_Tables {
                    AND player1_id     IS NOT NULL
                    AND player2_id     IS NOT NULL
                  ORDER BY
-                     FIELD(bracket_side, 'winners', 'losers', 'finals'),
                      round ASC,
+                     FIELD(bracket_side, 'winners', 'losers', 'finals'),
                      match_number ASC",
                 $tournament_id
             ),

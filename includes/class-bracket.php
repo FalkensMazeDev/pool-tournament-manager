@@ -173,23 +173,23 @@ class PTM_Bracket {
                 $lb_schedule[ $lb_round ]  = [ 'type' => 'init', 'matches' => $matches, 'wb_round' => 1 ];
                 $survivors                 = $matches;
                 $lb_round++;
+                // No elim after init — next round is the WB R2 drop round
             }
 
-            // After init or after the previous elim round, add a drop round
-            // pairing LB survivors 1-to-1 with WB losers
+            // Drop round: pair each LB survivor with a WB loser (1-to-1)
             if ( $wb_r >= 2 ) {
                 $matches                   = $wb_losers; // one LB survivor per WB loser
                 $lb_schedule[ $lb_round ]  = [ 'type' => 'drop', 'matches' => $matches, 'wb_round' => $wb_r ];
                 $survivors                 = $matches;
                 $lb_round++;
-            }
 
-            // Pure elim round: halve the survivors
-            if ( $survivors > 1 ) {
-                $elim_matches              = $survivors / 2;
-                $lb_schedule[ $lb_round ]  = [ 'type' => 'elim', 'matches' => $elim_matches ];
-                $survivors                 = $elim_matches;
-                $lb_round++;
+                // Pure elim round after each drop: halve the survivors
+                if ( $survivors > 1 ) {
+                    $elim_matches              = $survivors / 2;
+                    $lb_schedule[ $lb_round ]  = [ 'type' => 'elim', 'matches' => $elim_matches ];
+                    $survivors                 = $elim_matches;
+                    $lb_round++;
+                }
             }
         }
 
