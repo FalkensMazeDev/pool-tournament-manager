@@ -97,6 +97,22 @@ $tid    = $tournament ? $tournament->id : 0;
                                 </td>
                             </tr>
                             <tr>
+                                <th><label for="director_fee"><?php _e( 'Director Fee ($)', 'ptm-tournaments' ); ?></label></th>
+                                <td>
+                                    <input type="number" id="director_fee" name="director_fee" min="0" step="0.01"
+                                           value="<?php echo $tournament ? esc_attr( number_format( (float)($tournament->director_fee ?? 0), 2, '.', '' ) ) : '0.00'; ?>" class="small-text">
+                                    <p class="description"><?php _e( 'Deducted from each player\'s entrance fee before adding to the prize pot. E.g. $5 director fee on a $35 entry = $30 to the pot.', 'ptm-tournaments' ); ?></p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th><label for="money_added"><?php _e( 'Money Added ($)', 'ptm-tournaments' ); ?></label></th>
+                                <td>
+                                    <input type="number" id="money_added" name="money_added" min="0" step="0.01"
+                                           value="<?php echo $tournament ? esc_attr( number_format( (float)($tournament->money_added ?? 0), 2, '.', '' ) ) : '0.00'; ?>" class="small-text">
+                                    <p class="description"><?php _e( 'Bonus added to the prize pot (e.g. house money, sponsorship). Added on top of entry fees.', 'ptm-tournaments' ); ?></p>
+                                </td>
+                            </tr>
+                            <tr>
                                 <th><label for="slug"><?php _e( 'URL Slug', 'ptm-tournaments' ); ?></label></th>
                                 <td>
                                     <code><?php echo esc_html( home_url( '/tournament/' ) ); ?></code>
@@ -195,7 +211,7 @@ $tid    = $tournament ? $tournament->id : 0;
                 <div class="postbox-header"><h2><?php _e( 'Payout Structure', 'ptm-tournaments' ); ?></h2></div>
                 <div class="inside">
                     <p class="description">
-                        <?php _e( 'Define how the prize pot is split. Percentages should total 100%. Dollar amounts are calculated automatically from Entrance Fee × Players.', 'ptm-tournaments' ); ?>
+                        <?php _e( 'Prize pot = (Entrance Fee − Director Fee) × Players + Money Added. Percentages should total 100%.', 'ptm-tournaments' ); ?>
                     </p>
                     <?php
                     $payout_rules = $tournament_id ? PTM_Tournament::get_payout_rules( $tournament_id ) : [];

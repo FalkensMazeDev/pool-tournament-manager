@@ -14,6 +14,7 @@ class PTM_Settings {
     const DEFAULTS = [
         'tournament_base_slug'  => 'tournament',   // URL: /tournament/{slug}/
         'scorer_base_slug'      => 'ptm-score',    // URL: /ptm-score/{token}/
+        'table_base_slug'       => 'ptm-table',    // URL: /ptm-table/{slug}/{table}/
         'results_sub_slug'      => 'results',      // URL: /tournament/{slug}/results/
         'poll_interval_ms'      => 5000,            // Spectator polling interval
         'default_num_tables'    => 4,               // Default tables per tournament
@@ -47,6 +48,7 @@ class PTM_Settings {
         $clean = [
             'tournament_base_slug'   => self::sanitize_slug( $post['tournament_base_slug'] ?? 'tournament', 'tournament' ),
             'scorer_base_slug'       => self::sanitize_slug( $post['scorer_base_slug'] ?? 'ptm-score', 'ptm-score' ),
+            'table_base_slug'        => self::sanitize_slug( $post['table_base_slug'] ?? 'ptm-table', 'ptm-table' ),
             'results_sub_slug'       => self::sanitize_slug( $post['results_sub_slug'] ?? 'results', 'results' ),
             'poll_interval_ms'       => max( 2000, min( 30000, absint( $post['poll_interval_ms'] ?? 5000 ) ) ),
             'default_num_tables'     => max( 1, min( 20, absint( $post['default_num_tables'] ?? 4 ) ) ),

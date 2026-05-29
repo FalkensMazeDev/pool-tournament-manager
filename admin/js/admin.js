@@ -321,12 +321,19 @@
     );
 
     $(document).on('click', '.ptm-qr-toggle', function() {
-        const url = $(this).data('url') || '';
-        const svg = $(this).siblings('.ptm-qr-popover').find('svg')[0];
-        if (!svg) return;
-        $('#ptm-qr-modal-svg').html(svg.outerHTML);
+        var url = $(this).data('url');
+        if (!url) return;
         $('#ptm-qr-modal-url').text(url);
-        $('#ptm-qr-modal').show();
+        $('#ptm-qr-modal-svg').empty();
+        new QRCode(document.getElementById('ptm-qr-modal-svg'), {
+            text: url,
+            width: 220,
+            height: 220,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.M
+        });
+        $('#ptm-qr-modal').css('display', 'flex');
     });
 
     $(document).on('click', '#ptm-qr-modal-close, #ptm-qr-modal-backdrop', function() {

@@ -52,11 +52,13 @@ $table_status = $tournament->status === 'active' ? PTM_Tables::get_table_status(
                         $scorer_url = home_url( '/' . PTM_Settings::get( 'scorer_base_slug' ) . '/' . $tm->score_token );
                     ?>
                     <div class="ptm-table-qr-wrap">
-                        <button type="button" class="ptm-qr-toggle ptm-table-qr-btn" data-url="<?php echo esc_attr( $scorer_url ); ?>" title="Click to enlarge QR code">
-                            <?php echo PTM_QR::svg( $scorer_url, 80 ); ?>
-                        </button>
-                        <div class="ptm-qr-popover" style="display:none"><?php echo PTM_QR::svg( $scorer_url, 220 ); ?></div>
+                        <button type="button" class="ptm-qr-toggle ptm-table-qr-btn" data-url="<?php echo esc_attr( $scorer_url ); ?>" title="Show QR code">⊞ QR</button>
                         <a href="<?php echo esc_url( $scorer_url ); ?>" target="_blank" class="ptm-token-link">📱 Scorer</a>
+                        <?php
+                        $table_url = home_url( '/' . PTM_Settings::get( 'table_base_slug' ) . '/' . $tournament->slug . '/' . $t . '/' );
+                        ?>
+                        <a href="<?php echo esc_url( $table_url ); ?>" target="_blank" class="ptm-token-link" style="margin-left:6px;">📺 Table View</a>
+                        <button type="button" class="ptm-qr-toggle" data-url="<?php echo esc_attr( $table_url ); ?>" title="Table View QR">⊞ Table QR</button>
                     </div>
                     <?php endif; ?>
                 <?php else : ?>
@@ -180,10 +182,6 @@ $table_status = $tournament->status === 'active' ? PTM_Tables::get_table_status(
                         <div class="ptm-match-scorer-link">
                             <a href="<?php echo esc_url( $scorer_url ); ?>" target="_blank" class="ptm-token-link">📱 Table Scorer</a>
                             <button type="button" class="ptm-qr-toggle" data-url="<?php echo esc_attr( $scorer_url ); ?>" title="Show QR code">⊞ QR</button>
-                            <div class="ptm-qr-popover" style="display:none">
-                                <?php echo PTM_QR::svg( $scorer_url, 140 ); ?>
-                                <p class="ptm-qr-label">Scan to open scorer</p>
-                            </div>
                         </div>
                         <?php endif; ?>
 

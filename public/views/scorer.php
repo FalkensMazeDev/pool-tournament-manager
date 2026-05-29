@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title><?php echo esc_html( $match->tournament_name ); ?> — Score Entry</title>
     <link rel="stylesheet" href="<?php echo PTM_PLUGIN_URL; ?>public/css/scorer.css">
+    <script src="<?php echo PTM_PLUGIN_URL; ?>admin/js/qrcode.min.js"></script>
 </head>
 <body class="ptm-scorer-body">
 
@@ -28,10 +29,8 @@
     <!-- QR code share sheet -->
     <div class="ptm-scorer-qr-sheet" id="ptm-qr-sheet" style="display:none">
         <div class="ptm-scorer-qr-inner">
-            <?php
-            $scorer_url = home_url( '/ptm-score/' . $match->score_token );
-            echo PTM_QR::svg( $scorer_url, 220 );
-            ?>
+            <?php $scorer_url = home_url( '/' . PTM_Settings::get( 'scorer_base_slug' ) . '/' . $match->score_token ); ?>
+            <div id="ptm-qr-output"></div>
             <p class="ptm-scorer-qr-url"><?php echo esc_html( $scorer_url ); ?></p>
             <p class="ptm-scorer-qr-hint">Scan to open scorer on another device</p>
             <button type="button" class="ptm-scorer-qr-close" id="ptm-qr-close">Close</button>
@@ -275,26 +274,31 @@
             scoreAction(parseInt(this.dataset.slot, 10), 'remove');
         });
     });
-    // QR popup window
+    // Generate QR code
+    var qrOutputEl = document.getElementById('ptm-qr-output');
+    if (qrOutputEl && typeof QRCode !== 'undefined') {
+        new QRCode(qrOutputEl, {
+            text: <?php echo json_encode( $scorer_url ); ?>,
+            width: 220,
+            height: 220,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: 1
+        });
+    }
+    // QR sheet toggle
     var qrToggle = document.getElementById('ptm-qr-toggle');
     var qrSheet  = document.getElementById('ptm-qr-sheet');
     if (qrToggle && qrSheet) {
         qrToggle.addEventListener('click', function() {
-            var svg = qrSheet.querySelector('svg');
-            var urlEl = qrSheet.querySelector('.ptm-scorer-qr-url');
-            if (!svg) return;
-            var url = urlEl ? urlEl.textContent : '';
-            var popup = window.open('', 'ptm_qr_popup', 'width=320,height=420,resizable=yes,scrollbars=no');
-            if (!popup) return;
-            popup.document.write(
-                '<!DOCTYPE html><html><head><title>QR Code<\/title>' +
-                '<style>body{margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:sans-serif;background:#fff}' +
-                'svg{max-width:260px;height:auto}p{margin:12px 8px 4px;font-size:13px;word-break:break-all;text-align:center;color:#333}<\/style>' +
-                '<\/head><body>' + svg.outerHTML + '<p>' + url + '<\/p><\/body><\/html>'
-            );
-            popup.document.close();
-            popup.focus();
+            qrSheet.style.display = qrSheet.style.display === 'none' ? 'flex' : 'none';
         });
+        var qrClose = document.getElementById('ptm-qr-close');
+        if (qrClose) {
+            qrClose.addEventListener('click', function() {
+                qrSheet.style.display = 'none';
+            });
+        }
     }
 })();
 </script>
