@@ -353,15 +353,35 @@ class PTM_Admin {
         $player_id = isset( $_POST['player_id'] ) ? absint( $_POST['player_id'] ) : 0;
 
         $data = [
-            'name'  => $_POST['name']  ?? '',
-            'email' => $_POST['email'] ?? '',
-            'phone' => $_POST['phone'] ?? '',
+            'name'            => $_POST['name']            ?? '',
+            'email'           => $_POST['email']           ?? '',
+            'phone'           => $_POST['phone']           ?? '',
+            'apa_number'      => $_POST['apa_number']      ?? '',
+            'apa_skill_level' => $_POST['apa_skill_level'] ?? '',
+            'fargo_id'        => $_POST['fargo_id']        ?? '',
+            'fargo_rating'    => $_POST['fargo_rating']    ?? '',
         ];
 
         if ( $player_id ) {
             PTM_Player::update( $player_id, $data );
+            $saved_id = $player_id;
         } else {
-            PTM_Player::create( $data );
+            $result   = PTM_Player::create( $data );
+            $saved_id = is_wp_error( $result ) ? 0 : $result;
+        }
+
+        // Save custom meta fields
+        $meta_keys   = isset( $_POST['meta_keys'] )   ? (array) $_POST['meta_keys']   : [];
+        $meta_values = isset( $_POST['meta_values'] ) ? (array) $_POST['meta_values'] : [];
+        if ( $saved_id && ! empty( $meta_keys ) ) {
+            $meta = [];
+            foreach ( $meta_keys as $i => $k ) {
+                $k = sanitize_key( $k );
+                if ( $k !== '' ) {
+                    $meta[ $k ] = $meta_values[ $i ] ?? '';
+                }
+            }
+            PTM_Player::save_meta( $saved_id, $meta );
         }
 
         wp_redirect( add_query_arg( [ 'page' => 'ptm-players', 'saved' => 1 ], admin_url( 'admin.php' ) ) );
@@ -444,8 +464,12 @@ class PTM_Admin {
         $players = PTM_Player::get_all( [ 'search' => $search, 'limit' => 20 ] );
 
         $results = array_map( function( $p ) {
-            // get_all() returns ARRAY_A rows
-            return [ 'id' => (int) $p['id'], 'text' => $p['name'] ];
+            $label   = $p['name'];
+            $details = array_filter( [ $p['email'] ?? '', $p['phone'] ?? '' ] );
+            if ( $details ) {
+                $label .= ' (' . implode( ', ', $details ) . ')';
+            }
+            return [ 'id' => (int) $p['id'], 'text' => $label, 'name' => $p['name'] ];
         }, $players );
 
         wp_send_json_success( $results );

@@ -1,4 +1,6 @@
-<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
+<?php if ( ! defined( 'ABSPATH' ) ) exit;
+$all_meta = PTM_Player::get_all_meta();
+?>
 <div class="wrap ptm-admin">
 
     <h1 class="wp-heading-inline"><?php _e( 'Player Registry', 'ptm-tournaments' ); ?></h1>
@@ -28,21 +30,32 @@
                         <th><?php _e( 'Name', 'ptm-tournaments' ); ?></th>
                         <th><?php _e( 'Email', 'ptm-tournaments' ); ?></th>
                         <th><?php _e( 'Phone', 'ptm-tournaments' ); ?></th>
+                        <th><?php _e( 'APA SL', 'ptm-tournaments' ); ?></th>
+                        <th><?php _e( 'Fargo', 'ptm-tournaments' ); ?></th>
                         <th><?php _e( 'Actions', 'ptm-tournaments' ); ?></th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ( $players as $p ) : ?>
+                    <?php foreach ( $players as $p ) :
+                        $p_meta = $all_meta[ $p->id ] ?? [];
+                    ?>
                     <tr>
                         <td><strong><?php echo esc_html( $p->name ); ?></strong></td>
                         <td><?php echo $p->email ? esc_html( $p->email ) : '—'; ?></td>
                         <td><?php echo $p->phone ? esc_html( $p->phone ) : '—'; ?></td>
+                        <td><?php echo isset( $p->apa_skill_level ) && $p->apa_skill_level !== null ? esc_html( $p->apa_skill_level ) : '—'; ?></td>
+                        <td><?php echo isset( $p->fargo_rating ) && $p->fargo_rating !== null ? esc_html( $p->fargo_rating ) : '—'; ?></td>
                         <td class="ptm-actions">
                             <button type="button" class="button button-small ptm-edit-player"
                                     data-id="<?php echo $p->id; ?>"
                                     data-name="<?php echo esc_attr( $p->name ); ?>"
                                     data-email="<?php echo esc_attr( $p->email ); ?>"
-                                    data-phone="<?php echo esc_attr( $p->phone ); ?>">
+                                    data-phone="<?php echo esc_attr( $p->phone ); ?>"
+                                    data-apa-number="<?php echo esc_attr( $p->apa_number ?? '' ); ?>"
+                                    data-apa-sl="<?php echo esc_attr( $p->apa_skill_level ?? '' ); ?>"
+                                    data-fargo-id="<?php echo esc_attr( $p->fargo_id ?? '' ); ?>"
+                                    data-fargo-rating="<?php echo esc_attr( $p->fargo_rating ?? '' ); ?>"
+                                    data-meta="<?php echo esc_attr( wp_json_encode( $p_meta ) ); ?>">
                                 <?php _e( 'Edit', 'ptm-tournaments' ); ?>
                             </button>
                             <a href="<?php echo admin_url( 'admin.php?page=ptm-players&action=stats&player_id=' . $p->id ); ?>"
@@ -90,6 +103,35 @@
                             <label for="player-phone"><?php _e( 'Phone', 'ptm-tournaments' ); ?></label>
                             <input type="tel" id="player-phone" name="phone" class="regular-text">
                         </p>
+
+                        <hr style="margin:12px 0">
+                        <p style="font-weight:600;margin-bottom:4px"><?php _e( 'League / Rating Info', 'ptm-tournaments' ); ?></p>
+
+                        <p>
+                            <label for="player-apa-number"><?php _e( 'APA Number', 'ptm-tournaments' ); ?></label>
+                            <input type="text" id="player-apa-number" name="apa_number" class="regular-text">
+                        </p>
+                        <p>
+                            <label for="player-apa-sl"><?php _e( 'APA Skill Level', 'ptm-tournaments' ); ?></label>
+                            <input type="number" id="player-apa-sl" name="apa_skill_level" class="small-text" min="1" max="9">
+                        </p>
+                        <p>
+                            <label for="player-fargo-id"><?php _e( 'Fargo ID', 'ptm-tournaments' ); ?></label>
+                            <input type="text" id="player-fargo-id" name="fargo_id" class="regular-text">
+                        </p>
+                        <p>
+                            <label for="player-fargo-rating"><?php _e( 'Fargo Rating', 'ptm-tournaments' ); ?></label>
+                            <input type="number" id="player-fargo-rating" name="fargo_rating" class="small-text" min="0" max="1000">
+                        </p>
+
+                        <hr style="margin:12px 0">
+                        <p style="font-weight:600;margin-bottom:4px"><?php _e( 'Custom Fields', 'ptm-tournaments' ); ?></p>
+                        <div id="ptm-meta-fields">
+                            <!-- Rows injected by JS when editing -->
+                        </div>
+                        <button type="button" class="button" id="ptm-add-meta-field" style="margin-bottom:10px">
+                            <?php _e( '+ Add Field', 'ptm-tournaments' ); ?>
+                        </button>
 
                         <button type="submit" class="button button-primary" style="width:100%;" id="ptm-player-submit">
                             <?php _e( 'Add Player', 'ptm-tournaments' ); ?>

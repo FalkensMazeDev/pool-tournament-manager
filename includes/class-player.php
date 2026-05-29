@@ -52,14 +52,20 @@ class PTM_Player {
 
     public static function insert( array $data ): int|false {
         global $wpdb;
+        $apa_sl = isset( $data['apa_skill_level'] ) && $data['apa_skill_level'] !== '' ? (int) $data['apa_skill_level'] : null;
+        $fargo  = isset( $data['fargo_rating'] )    && $data['fargo_rating']    !== '' ? (int) $data['fargo_rating']    : null;
         $result = $wpdb->insert(
             $wpdb->prefix . 'ptm_players',
             [
-                'name'  => sanitize_text_field( $data['name'] ),
-                'email' => sanitize_email( $data['email'] ?? '' ) ?: null,
-                'phone' => sanitize_text_field( $data['phone'] ?? '' ) ?: null,
+                'name'            => sanitize_text_field( $data['name'] ),
+                'email'           => sanitize_email( $data['email'] ?? '' ) ?: null,
+                'phone'           => sanitize_text_field( $data['phone'] ?? '' ) ?: null,
+                'apa_number'      => sanitize_text_field( $data['apa_number']  ?? '' ) ?: null,
+                'apa_skill_level' => $apa_sl,
+                'fargo_id'        => sanitize_text_field( $data['fargo_id']    ?? '' ) ?: null,
+                'fargo_rating'    => $fargo,
             ],
-            [ '%s', '%s', '%s' ]
+            [ '%s', '%s', '%s', '%s', '%d', '%s', '%d' ]
         );
         return $result ? (int) $wpdb->insert_id : false;
     }
@@ -80,6 +86,22 @@ class PTM_Player {
         if ( array_key_exists( 'phone', $data ) ) {
             $fields['phone'] = sanitize_text_field( $data['phone'] ) ?: null;
             $formats[]       = '%s';
+        }
+        if ( array_key_exists( 'apa_number', $data ) ) {
+            $fields['apa_number'] = sanitize_text_field( $data['apa_number'] ) ?: null;
+            $formats[]            = '%s';
+        }
+        if ( array_key_exists( 'apa_skill_level', $data ) ) {
+            $fields['apa_skill_level'] = $data['apa_skill_level'] !== '' ? (int) $data['apa_skill_level'] : null;
+            $formats[]                 = '%d';
+        }
+        if ( array_key_exists( 'fargo_id', $data ) ) {
+            $fields['fargo_id'] = sanitize_text_field( $data['fargo_id'] ) ?: null;
+            $formats[]          = '%s';
+        }
+        if ( array_key_exists( 'fargo_rating', $data ) ) {
+            $fields['fargo_rating'] = $data['fargo_rating'] !== '' ? (int) $data['fargo_rating'] : null;
+            $formats[]              = '%d';
         }
 
         if ( empty( $fields ) ) {
@@ -102,6 +124,48 @@ class PTM_Player {
             [ 'id' => $id ],
             [ '%d' ]
         );
+    }
+
+    public static function get_meta( int $player_id ): array {
+        global $wpdb;
+        $rows = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT meta_key, meta_value FROM {$wpdb->prefix}ptm_player_meta WHERE player_id = %d ORDER BY meta_key ASC",
+                $player_id
+            ),
+            ARRAY_A
+        );
+        $meta = [];
+        foreach ( $rows as $row ) {
+            $meta[ $row['meta_key'] ] = $row['meta_value'];
+        }
+        return $meta;
+    }
+
+    public static function save_meta( int $player_id, array $meta ): void {
+        global $wpdb;
+        $table = $wpdb->prefix . 'ptm_player_meta';
+        // Delete all existing meta for this player, then re-insert
+        $wpdb->delete( $table, [ 'player_id' => $player_id ], [ '%d' ] );
+        foreach ( $meta as $key => $value ) {
+            $key   = sanitize_key( $key );
+            $value = sanitize_textarea_field( $value );
+            if ( $key === '' ) continue;
+            $wpdb->insert( $table, [ 'player_id' => $player_id, 'meta_key' => $key, 'meta_value' => $value ], [ '%d', '%s', '%s' ] );
+        }
+    }
+
+    public static function get_all_meta(): array {
+        global $wpdb;
+        $rows = $wpdb->get_results(
+            "SELECT player_id, meta_key, meta_value FROM {$wpdb->prefix}ptm_player_meta ORDER BY player_id, meta_key",
+            ARRAY_A
+        );
+        $meta = [];
+        foreach ( $rows as $row ) {
+            $meta[ $row['player_id'] ][ $row['meta_key'] ] = $row['meta_value'];
+        }
+        return $meta;
     }
 
     // ── Tournament roster ─────────────────────────────────────────────────────
